@@ -1,16 +1,16 @@
 <?php
 
-// Check if cURL is loaded
-if (!function_exists('curl_init')) {
-  throw new Exception('cURL library is not loaded.');
-}
-
 class PushBulletException extends Exception {
   // Exception thrown by PushBullet
 }
 
 class PushBullet {
   public function __construct($secret) {
+    // Check if cURL is loaded
+    if (!function_exists('curl_init')) {
+      throw new PushBulletException('cURL library is not loaded.');
+    }
+
     // Basic API key validation (is it MD5?).
     if (preg_match('/^[a-f0-9]{32}$/', $secret)) {
       $this->_apiKey = $secret;
@@ -49,26 +49,23 @@ class PushBullet {
     return $this->_sharedDevices;
   }
 
-  public function push($devices, $type, $primary, $secondary) {
-    return $this->_pusher($devices, $type, $primary, $secondary);
-  }
-
   public function pushNote($devices, $title, $body) {
-    return $this->_pusher($devices, 'note', $title, $body);
+    return $this->_push($devices, 'note', $title, $body);
   }
 
   public function pushAddress($devices, $name, $address) {
-    return $this->_pusher($devices, 'address', $name, $address);
+    return $this->_push($devices, 'address', $name, $address);
   }
 
   public function pushList($devices, $title, $items) {
-    return $this->_pusher($devices, 'list', $title, $items);
+    return $this->_push($devices, 'list', $title, $items);
   }
 
   public function pushLink($devices, $title, $url) 
   {
-    return $this->_pusher($devices, 'link', $title, $url);
+    return $this->_push($devices, 'link', $title, $url);
   }
+
 
   const API_HOST = 'https://www.pushbullet.com/api';
   private $_apiKey;
@@ -155,10 +152,6 @@ class PushBullet {
           'title' => $primary,
           'url' => $secondary
         ));
-      break;
-
-      default:
-        throw new PushBulletException('Invalid push type (' . $type . ').');
     }
 
     $curl = curl_init();
@@ -178,7 +171,7 @@ class PushBullet {
     return true;
   }
 
-  private function _pusher($pushTo, $pushType, $primary, $secondary) {
+  private function _push($pushTo, $pushType, $primary, $secondary) {
     if (is_int($pushTo) && $pushTo > 0) {
       return $this->_buildCurlQuery($pushTo, $pushType, $primary, $secondary);
     } else if (is_array($pushTo)) {
