@@ -67,7 +67,7 @@ class PushBullet {
   }
 
 
-  const API_HOST = 'https://www.pushbullet.com/api';
+  const API_HOST = 'https://api.pushbullet.com/api';
   private $_apiKey;
   private $_allDevices;
   private $_myDevices;
