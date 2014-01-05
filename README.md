@@ -14,7 +14,7 @@ For more information, you can refer to these links:
 ## Requirements
 * PHP 5
 * cURL library for PHP
-* Your PushBullet API key (get it here: https://www.pushbullet.com/settings)
+* Your PushBullet API key (get it here: https://www.pushbullet.com/account)
 
 ## Examples
 ```php
