@@ -24,7 +24,7 @@ require 'PushBullet.class.php';
 
 try {
   #### AUTHENTICATION ####
-  // Get your API key here: https://www.pushbullet.com/settings
+  // Get your API key here: https://www.pushbullet.com/account
   $p = new PushBullet('YOUR_API_KEY');
 
 
