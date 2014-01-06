@@ -11,12 +11,7 @@ class PushBullet {
       throw new PushBulletException('cURL library is not loaded.');
     }
 
-    // Basic API key validation (is it MD5?).
-    if (preg_match('/^[a-f0-9]{32}$/', $secret)) {
-      $this->_apiKey = $secret;
-    } else {
-      throw new PushBulletException('Malformed API key.');
-    }
+    $this->_apiKey = $secret;
 
     // Get all devices associated with the API key.
     // This is also a more reliable way of API key validation.
