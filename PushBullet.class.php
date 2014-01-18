@@ -27,12 +27,19 @@ class PushBullet {
       throw new PushBulletException('Unable to authenticate. HTTP Error ' . $this->_pushBulletErrors[$httpCode]);
     }
 
-    if ($this->_allDevices = json_decode($response, true)) {
-	    $this->_myDevices = $this->_allDevices['devices'];
-	    $this->_sharedDevices = $this->_allDevices['shared_devices'];
-	} else {
-		throw new PushBulletException('Unable to decode JSON response.');
-	}
+    // Check PHP version to determine whether a JSON big int workaround should be used
+    if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+      $this->_allDevices = json_decode($response, true, 512, JSON_BIGINT_AS_STRING);
+    } else {
+      $this->_allDevices = json_decode(preg_replace('/\"([a-zA-Z0-9_]+)\":\s?(\d{14,})/', '"${1}":"${2}"', $response), true);
+    }
+
+    if ($this->_allDevices) {
+      $this->_myDevices = $this->_allDevices['devices'];
+      $this->_sharedDevices = $this->_allDevices['shared_devices'];
+    } else {
+      throw new PushBulletException('Unable to decode JSON response.');
+    }
   }
 
   public function getDevices() {
@@ -75,8 +82,8 @@ class PushBullet {
     400 => '400 Bad Request. Missing a required parameter.',
     401 => '401 Unauthorized. No valid API key provided.',
     402 => '402 Request Failed.',
-    403 => '403 Forbidden. The API key was not valid for the request.',
-    404 => '404 Not Found. The requested item does not exist.',
+    403 => '403 Forbidden. The API key is not valid for that request.',
+    404 => '404 Not Found. The requested item doesn\'t exist.',
     500 => '500 Internal Server Error.',
     502 => '502 Bad Gateway.',
     503 => '503 Service Unavailable.',
@@ -166,25 +173,29 @@ class PushBullet {
   }
 
   private function _push($pushTo, $pushType, $primary, $secondary) {
+    if (empty($this->_allDevices)) {
+      throw new PushBulletException('Push: No devices found.');
+    }
+
     if (is_string($pushTo) && $pushTo != 'all' && $pushTo != 'my' && $pushTo != 'shared') {
       return $this->_buildCurlQuery($pushTo, $pushType, $primary, $secondary);
     } else if (is_array($pushTo)) {
       // Push to multiple devices in an array.
 
       // Check if the device ID is in the list of devices we have permissions to push to.
-      $failedDevices = '';
+      $failedDevices = array();
       foreach ($pushTo as $device) {
         if ($this->_in_array($device, $this->_allDevices)) {
           $this->_buildCurlQuery($device, $pushType, $primary, $secondary);
         } else {
-          $failedDevices .= ' ' . $device;
+          $failedDevices[] = $device;
         }
       }
 
       if (!empty($failedDevices)) {
-        throw new PushBulletException('Push failed for devices:' . $failedDevices);
+        throw new PushBulletException('Push failed for devices: ' . implode(', ', $failedDevices));
       }
-    } else if (($pushTo == 'all' || $pushTo == 'my' || $pushTo == 'shared') && !empty($this->_allDevices)) {
+    } else if ($pushTo == 'all' || $pushTo == 'my' || $pushTo == 'shared') {
       // Push to my devices, if any.
       if (($pushTo == 'all' || $pushTo == 'my') && !empty($this->_myDevices)) {
         foreach ($this->_myDevices as $myDevice) {
@@ -202,8 +213,6 @@ class PushBullet {
       } else if ($pushTo == 'shared' && empty($this->_sharedDevices)) {
         throw new PushBulletException('Push: No shared devices found.');
       }
-    } else if (empty($this->_allDevices)) {
-      throw new PushBulletException('Push: No devices found.');
     } else {
       throw new PushBulletException('Push: Invalid device definition (' . $pushTo . ').');
     }
