@@ -27,9 +27,12 @@ class PushBullet {
       throw new PushBulletException('Unable to authenticate. HTTP Error ' . $this->_pushBulletErrors[$httpCode]);
     }
 
-    $this->_allDevices = @json_decode($response, true);
-    $this->_myDevices = @$this->_allDevices['devices'];
-    $this->_sharedDevices = @$this->_allDevices['shared_devices'];
+    if ($this->_allDevices = json_decode($response, true)) {
+	    $this->_myDevices = $this->_allDevices['devices'];
+	    $this->_sharedDevices = $this->_allDevices['shared_devices'];
+	} else {
+		throw new PushBulletException('Unable to decode JSON response.');
+	}
   }
 
   public function getDevices() {
@@ -81,10 +84,6 @@ class PushBullet {
   );
 
   private function _buildCurlQuery($deviceId, $type, $primary, $secondary) {
-    if (!is_int($deviceId) || $deviceId <= 0) {
-      throw new PushBulletException('Invalid device ID (' . $deviceId . ').');
-    }
-
     switch ($type) {
       case 'note':
         if (empty($primary) && !empty($secondary)) {
@@ -95,7 +94,7 @@ class PushBullet {
         }
 
         $queryData = http_build_query(array(
-          'device_id' => $deviceId,
+          'device_iden' => $deviceId,
           'type' => 'note',
           'title' => $primary,
           'body' => $secondary
@@ -108,7 +107,7 @@ class PushBullet {
         }
 
         $queryData = http_build_query(array(
-          'device_id' => $deviceId,
+          'device_iden' => $deviceId,
           'type' => 'address',
           'name' => $primary,
           'address' => $secondary
@@ -126,7 +125,7 @@ class PushBullet {
         }
 
         $queryData = http_build_query(array(
-          'device_id' => $deviceId,
+          'device_iden' => $deviceId,
           'type' => 'list',
           'title' => $primary,
           'items' => $secondary
@@ -142,7 +141,7 @@ class PushBullet {
           throw new PushBulletException('Link: No URL supplied.');
         }
         $queryData = http_build_query(array(
-          'device_id' => $deviceId,
+          'device_iden' => $deviceId,
           'type' => 'link',
           'title' => $primary,
           'url' => $secondary
@@ -167,17 +166,18 @@ class PushBullet {
   }
 
   private function _push($pushTo, $pushType, $primary, $secondary) {
-    if (is_int($pushTo) && $pushTo > 0) {
+    if (is_string($pushTo) && $pushTo != 'all' && $pushTo != 'my' && $pushTo != 'shared') {
       return $this->_buildCurlQuery($pushTo, $pushType, $primary, $secondary);
     } else if (is_array($pushTo)) {
       // Push to multiple devices in an array.
 
       // Check if the device ID is in the list of devices we have permissions to push to.
+      $failedDevices = '';
       foreach ($pushTo as $device) {
-        if ($this->_in_array($device, $this->_allDevices) && is_int($device) && $device > 0) {
+        if ($this->_in_array($device, $this->_allDevices)) {
           $this->_buildCurlQuery($device, $pushType, $primary, $secondary);
         } else {
-          @$failedDevices .= ' ' . $device;
+          $failedDevices .= ' ' . $device;
         }
       }
 
@@ -188,7 +188,7 @@ class PushBullet {
       // Push to my devices, if any.
       if (($pushTo == 'all' || $pushTo == 'my') && !empty($this->_myDevices)) {
         foreach ($this->_myDevices as $myDevice) {
-          $this->_buildCurlQuery($myDevice['id'], $pushType, $primary, $secondary);
+          $this->_buildCurlQuery($myDevice['iden'], $pushType, $primary, $secondary);
         }
       } else if ($pushTo == 'my' && empty($this->_myDevices)) {
         throw new PushBulletException('Push: No own devices found.');
@@ -197,7 +197,7 @@ class PushBullet {
       // Push to shared devices, if any.
       if (($pushTo == 'all' || $pushTo == 'shared') && !empty($this->_sharedDevices)) {
         foreach ($this->_sharedDevices as $sharedDevice) {
-          $this->_buildCurlQuery($sharedDevice['id'], $pushType, $primary, $secondary);
+          $this->_buildCurlQuery($sharedDevice['iden'], $pushType, $primary, $secondary);
         }
       } else if ($pushTo == 'shared' && empty($this->_sharedDevices)) {
         throw new PushBulletException('Push: No shared devices found.');
