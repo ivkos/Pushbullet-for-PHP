@@ -55,6 +55,10 @@ try {
 
   // Push to device qVNRhnXxZzJ95zz a to-do list with a title 'Shopping List' and items 'Milk' and 'Butter'
   $p->pushList('qVNRhnXxZzJ95zz', 'Shopping List', array('Milk', 'Butter'));
+  
+  // Push to device 0PpyWzARDK0w6et the file '../pic.jpg'.
+  // Method accepts absolute and relative paths.
+  $p->pushFile('0PpyWzARDK0w6et', '../pic.jpg');
 
   // Push to device gXVZDd2hLY6TOB1 a link with a title 'ivkos at GitHub' and a URL 'https://github.com/ivkos'
   $p->pushLink('gXVZDd2hLY6TOB1', 'ivkos at GitHub', 'https://github.com/ivkos');
