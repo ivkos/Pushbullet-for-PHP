@@ -66,6 +66,10 @@ class PushBullet {
     return $this->_push($devices, 'list', $title, $items);
   }
 
+  public function pushFile($devices, $fileName) {
+    return $this->_push($devices, 'file', $fileName, NULL);
+  }
+
   public function pushLink($devices, $title, $url) 
   {
     return $this->_push($devices, 'link', $title, $url);
@@ -140,7 +144,21 @@ class PushBullet {
       break;
 
       case 'file':
-        throw new PushBulletException('File: Pushing files is not implemented.');
+        $fullFilePath = realpath($primary);
+
+        if (!is_readable($fullFilePath)) {
+          throw new PushBulletException('File: File does not exist or is unreadable.');
+        }
+
+        if (filesize($fullFilePath) > 25*1024*1024) {
+          throw new PushBulletException('File: File size exceeds 25 MB.');
+        }
+
+        $queryData = array(
+          'device_iden' => $deviceId,
+          'type' => 'file',
+          'file' => '@' . $fullFilePath
+        );
       break;
 
       case 'link':
