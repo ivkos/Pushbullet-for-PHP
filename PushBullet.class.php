@@ -20,6 +20,11 @@ class PushBullet {
     curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($curl);
+    
+    if ($response === false) {
+      throw new PushBulletException('cURL Error: ' . curl_error($curl));
+    }
+    
     $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
 
@@ -180,6 +185,11 @@ class PushBullet {
     curl_setopt($curl, CURLOPT_POSTFIELDS, $queryData);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($curl);
+    
+    if ($response === false) {
+      throw new PushBulletException('cURL Error: ' . curl_error($curl));
+    }
+    
     $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
 
