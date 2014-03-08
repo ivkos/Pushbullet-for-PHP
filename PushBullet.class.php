@@ -146,6 +146,9 @@ class PushBullet {
           'title' => $primary,
           'items' => $secondary
         ));
+        
+        // Remove array keys in square brackets
+        $queryData = preg_replace('/%5B[0-9]+%5D/i', '', $queryData);
       break;
 
       case 'file':
