@@ -165,7 +165,7 @@ class PushBullet {
         $queryData = array(
           'device_iden' => $deviceId,
           'type' => 'file',
-          'file' => '@' . $fullFilePath
+          'file' => '@' . $fullFilePath . ';filename=' . basename($fullFilePath)
         );
       break;
 
