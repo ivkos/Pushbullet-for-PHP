@@ -60,24 +60,24 @@ class PushBullet {
   }
 
   public function pushNote($devices, $title, $body) {
-    return $this->_push($devices, 'note', $title, $body);
+    return $this->_push($devices, 'note', utf8_encode($title), $body);
   }
 
   public function pushAddress($devices, $name, $address) {
-    return $this->_push($devices, 'address', $name, $address);
+    return $this->_push($devices, 'address', utf8_encode($name), $address);
   }
 
   public function pushList($devices, $title, $items) {
-    return $this->_push($devices, 'list', $title, $items);
+    return $this->_push($devices, 'list', utf8_encode($title), $items);
   }
 
   public function pushFile($devices, $fileName) {
-    return $this->_push($devices, 'file', $fileName, NULL);
+    return $this->_push($devices, 'file', utf8_encode($fileName), NULL);
   }
 
   public function pushLink($devices, $title, $url) 
   {
-    return $this->_push($devices, 'link', $title, $url);
+    return $this->_push($devices, 'link', utf8_encode($title), $url);
   }
 
 
