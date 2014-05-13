@@ -2,19 +2,26 @@ PushBullet for PHP
 ==================
 
 ## Description
-Using this class, you can send push notifications to your Android devices running **PushBullet**.
-There are different types of notifications (i.e. notes, Google Maps addresses, to-do lists and URLs).
+Using this class, you can send push notifications to Android, iOS, Chrome and Firefox running **Pushbullet**. The following types of push notifications can be sent:
+* notes
+* links
+* files (smaller than 25 MB)
+* to-do lists
+* Google Maps addresses
 
 For more information, you can refer to these links:
-* PushBullet official website: https://www.pushbullet.com
-* PushBullet for Android: https://play.google.com/store/apps/details?id=com.pushbullet.android
+* Pushbullet official website: https://www.pushbullet.com
+* Android app: https://play.google.com/store/apps/details?id=com.pushbullet.android
+* iOS app: https://itunes.apple.com/us/app/pushbullet/id810352052
+* Chrome extension: https://chrome.google.com/webstore/detail/pushbullet/chlffgpmiacpedhhbkiomidkjlcfhogd
+* Firefox extension: https://addons.mozilla.org/en-US/firefox/addon/pushbullet/
 * API reference: https://www.pushbullet.com/api
 * Blog: http://blog.pushbullet.com
 
 ## Requirements
 * PHP 5
 * cURL library for PHP
-* Your PushBullet API key (get it here: https://www.pushbullet.com/account)
+* Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
 
 ## Examples
 ```php
@@ -90,4 +97,4 @@ catch (PushBulletException $e) {
 ```
 
 ## Future
-I'll try to keep this PHP class up-to-date as the PushBullet API changes. If you find any bugs or have feature requests/ideas, please use the issue tracker.
+I'll try to keep this PHP class up-to-date as the Pushbullet API changes. If you find any bugs or have feature requests/ideas, please use the issue tracker.
