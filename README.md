@@ -10,16 +10,17 @@ Using this class, you can send push notifications to Android, iOS, Chrome and Fi
 * Google Maps addresses
 
 For more information, you can refer to these links:
-* Pushbullet official website: https://www.pushbullet.com
-* Android app: https://play.google.com/store/apps/details?id=com.pushbullet.android
-* iOS app: https://itunes.apple.com/us/app/pushbullet/id810352052
-* Chrome extension: https://chrome.google.com/webstore/detail/pushbullet/chlffgpmiacpedhhbkiomidkjlcfhogd
-* Firefox extension: https://addons.mozilla.org/en-US/firefox/addon/pushbullet/
-* API reference: https://www.pushbullet.com/api
-* Blog: http://blog.pushbullet.com
+* **Official website**: https://www.pushbullet.com
+* **API reference**: https://docs.pushbullet.com
+* **Blog**: http://blog.pushbullet.com
+
+* **Android app**: https://play.google.com/store/apps/details?id=com.pushbullet.android
+* **iOS app**: https://itunes.apple.com/us/app/pushbullet/id810352052
+* **Chrome extension**: https://chrome.google.com/webstore/detail/pushbullet/chlffgpmiacpedhhbkiomidkjlcfhogd
+* **Firefox extension**: https://addons.mozilla.org/en-US/firefox/addon/pushbullet/
 
 ## Requirements
-* PHP 5
+* PHP >= 5.2.0
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
 
@@ -35,60 +36,65 @@ try {
   $p = new PushBullet('YOUR_API_KEY');
 
 
+  #### Get methods
 
-  #### LIST OF DEVICES ####
-  #### These methods return arrays containing device definitions, or NULL if there are no devices.
-  #### Use them to get 'device_iden' which is a unique ID for every device and is used with push methods below.
-  
-  // Print an array containing all available devices (including other people's devices shared with you). 
+  // Print the definitions for your own devices. Useful for getting the 'iden' for using with the push methods.
   print_r($p->getDevices());
 
-  // Print an array with your own devices
-  print_r($p->getMyDevices());
+  // Print the definitions for contacts/devices shared with you. Useful for getting 'iden', too.
+  print_r($p->getContacts());
 
-  // Print an array with devices shared with you
-  print_r($p->getSharedDevices());
+  // Print information about your Pushbullet account
+  print_r($p->getUserInformation());
+  
+  // Print a list of sent push notifications, modified after 1400441645 unix time
+  print_r($p->getPushHistory(1400441645));
 
 
 
-  #### PUSHING TO A SINGLE DEVICE ####
-  #### Methods return TRUE on success, or throw an exception on failure.
+  #### Push methods
+  
+  // Push to email me@example.com a note with a title 'Hey!' and a body 'It works!'
+  $p->pushNote('me@example.com', 'Hey!', 'It works!');
   
   // Push to device s2GBpJqaq9IY5nx a note with a title 'Hey!' and a body 'It works!'
   $p->pushNote('s2GBpJqaq9IY5nx', 'Hey!', 'It works!');
+  
+  // Push to device gXVZDd2hLY6TOB1 a link with a title 'ivkos at GitHub', a URL 'https://github.com/ivkos' and body 'Pretty useful.'
+  $p->pushLink('gXVZDd2hLY6TOB1', 'ivkos at GitHub', 'https://github.com/ivkos', 'Pretty useful.');
 
-  // Push to device a91kkT2jIICD4JH a Google Maps address with a title 'Google HQ' and an address '1600 Amphitheatre Parkway'
+  // Push to device a91kkT2jIICD4JH a Google Maps address with a name 'Google HQ' and an address '1600 Amphitheatre Parkway'
   $p->pushAddress('a91kkT2jIICD4JH', 'Google HQ', '1600 Amphitheatre Parkway');
 
   // Push to device qVNRhnXxZzJ95zz a to-do list with a title 'Shopping List' and items 'Milk' and 'Butter'
   $p->pushList('qVNRhnXxZzJ95zz', 'Shopping List', array('Milk', 'Butter'));
   
-  // Push to device 0PpyWzARDK0w6et the file '../pic.jpg'.
+  // Push to device 0PpyWzARDK0w6et the file '../pic.jpg' of MIME type image/jpeg
   // Method accepts absolute and relative paths.
+  $p->pushFile('0PpyWzARDK0w6et', '../pic.jpg', 'image/jpeg');
+  // If the MIME type argument is omitted, an attempt to guess it will be made.
   $p->pushFile('0PpyWzARDK0w6et', '../pic.jpg');
-
-  // Push to device gXVZDd2hLY6TOB1 a link with a title 'ivkos at GitHub' and a URL 'https://github.com/ivkos'
-  $p->pushLink('gXVZDd2hLY6TOB1', 'ivkos at GitHub', 'https://github.com/ivkos');
-
-
-
-  #### PUSHING TO MULTIPLE DEVICES ####
   
-  // Push to all available devices
-  $p->pushNote('all', 'Some title', 'Some text');
   
-  // Push to all of your own devices
-  $p->pushList('my', 'Buy these', array('PHP for Dummies', 'New charger'));
+  #### Pushing to multiple devices
   
-  // Push to all devices shared with you
-  $p->pushAddress('shared', "Let's meet here", 'The Lake, Central Park, NY');
+  // Push to all of your own devices, if you set the first argument to NULL or an empty string
+  $p->pushNote(NULL, 'Some title', 'Some text');
+  $p->pushNote('', 'Some title', 'Some text');
   
-  // Push to multiple devices defined by their IDs
-  // When pushing to multiple device IDs, some of them might fail. If so, an exception saying
-  // which devices have failed will be thrown. If a device ID isn't in the message, it means push is successful.
-  $p->pushLink(array('5ZUC8hKOqLU0Jv7', 'SwZLKGn6M0fe7tO', 'tc7JSzKJLGLcKII'), 'Check this out!', 'http://youtu.be/dQw4w9WgXcQ');
-}
-catch (PushBulletException $e) {
+  
+  
+  #### Delete methods
+  
+  // Delete the push notification with the 'iden' specified
+  $p->deletePush('a91kkT2jIICD4JH');
+  
+  // Delete the device with the 'iden' specified
+  $p->deleteDevice('s2GBpJqaq9IY5nx');
+  
+  // Delete the contact with the 'iden' specified
+  $p->deleteContact('0PpyWzARDK0w6et');
+} catch (PushBulletException $e) {
   // Exception handling
   die($e->getMessage());
 }
