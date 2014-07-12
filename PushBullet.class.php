@@ -223,6 +223,7 @@ class PushBullet {
 		curl_close($curl);
 
 		return json_decode($response);
+		echo json_decode($response);
 	}
 }
 
