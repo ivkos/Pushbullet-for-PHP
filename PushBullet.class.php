@@ -75,22 +75,46 @@ class PushBullet {
 	}
 
 	// Contacts
+	
+	public function createContact($name, $email)
+	{
+		if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
+			throw new PushBulletException('Create contact: Invalid email address.');
+		}
+
+		$queryData = array(
+			'name' => $name,
+			'email' => $email
+		);
+
+		return $this->_curlRequest(self::URL_CONTACTS, 'POST', $queryData);
+	}
 
 	public function getContacts()
 	{
 		return $this->_curlRequest(self::URL_CONTACTS, 'GET');
 	}
-
-	public function deleteContact($contectIden)
+	
+	public function updateContact($contactIden, $name)
 	{
-		return $this->_curlRequest(self::URL_CONTACTS . '/' . $contectIden, 'DELETE');
+		return $this->_curlRequest(self::URL_CONTACTS . '/' . $contactIden, 'POST', array('name' => $name));
+	}
+
+	public function deleteContact($contactIden)
+	{
+		return $this->_curlRequest(self::URL_CONTACTS . '/' . $contactIden, 'DELETE');
 	}
 
 	// Users
 
-	public function getUserInformation($user = 'me')
+	public function getUserInformation()
 	{
-		return $this->_curlRequest(self::URL_USERS . '/' . $user, 'GET');
+		return $this->_curlRequest(self::URL_USERS . '/me', 'GET');
+	}
+
+	public function updateUserPreferences($preferences)
+	{
+		return $this->_curlRequest(self::URL_USERS . '/me', 'POST', array('preferences' => $preferences));
 	}
 
 
