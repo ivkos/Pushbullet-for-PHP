@@ -56,10 +56,14 @@ class PushBullet {
 
 		return $this->_curlRequest(self::URL_PUSHES, 'GET', $data);
 	}
+	
+	public function dismissPush($pushIden) {
+		return $this->_curlRequest(self::URL_PUSHES . '/' . $pushIden, 'POST', array('dismissed' => TRUE));
+	}
 
 	public function deletePush($pushIden)
 	{
-		return $this->_curlRequest(URL_PUSHES . '/' . $pushIden, 'DELETE');
+		return $this->_curlRequest(self::URL_PUSHES . '/' . $pushIden, 'DELETE');
 	}
 
 	// Devices
