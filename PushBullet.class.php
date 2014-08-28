@@ -211,6 +211,7 @@ class PushBullet {
 		}
 
 		curl_setopt($curl, CURLOPT_URL, $url);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
 		if ($auth) {
 			curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
