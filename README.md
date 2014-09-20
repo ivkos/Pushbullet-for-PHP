@@ -13,7 +13,6 @@ For more information, you can refer to these links:
 * **Official website**: https://www.pushbullet.com
 * **API reference**: https://docs.pushbullet.com
 * **Blog**: http://blog.pushbullet.com
-
 * **Android app**: https://play.google.com/store/apps/details?id=com.pushbullet.android
 * **iOS app**: https://itunes.apple.com/us/app/pushbullet/id810352052
 * **Chrome extension**: https://chrome.google.com/webstore/detail/pushbullet/chlffgpmiacpedhhbkiomidkjlcfhogd
@@ -23,6 +22,7 @@ For more information, you can refer to these links:
 * PHP >= 5.2.0
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
+* PHP for Windows users: if you are getting SSL certificate errors, see #25
 
 ## Examples
 ```php
