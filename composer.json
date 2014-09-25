@@ -1,0 +1,12 @@
+{
+  "name" : "ivkos/pushbullet",
+  "require" : {
+    "php" : ">= 5.2.0",
+    "ext-curl" : "*"
+  },
+  "autoload" : {
+    "psr-4" : {
+      "" : ["src/", "tests/"]
+    }
+  }
+}
