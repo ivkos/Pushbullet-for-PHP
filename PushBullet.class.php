@@ -8,6 +8,8 @@ class PushBullet {
 	const URL_CONTACTS       = 'https://api.pushbullet.com/v2/contacts';
 	const URL_UPLOAD_REQUEST = 'https://api.pushbullet.com/v2/upload-request';
 	const URL_USERS          = 'https://api.pushbullet.com/v2/users';
+	const URL_SUBSCRIPTIONS  = 'https://api.pushbullet.com/v2/subscriptions';
+	const URL_CHANNEL_INFO   = 'https://api.pushbullet.com/v2/channel-info';
 
 	public function __construct($apiKey)
 	{
@@ -119,6 +121,28 @@ class PushBullet {
 	public function updateUserPreferences($preferences)
 	{
 		return $this->_curlRequest(self::URL_USERS . '/me', 'POST', array('preferences' => $preferences));
+	}
+
+	// Channels
+
+	public function subscribeToChannel($channelTag)
+	{
+		return $this->_curlRequest(self::URL_SUBSCRIPTIONS, 'POST', array('channel_tag' => $channelTag));
+	}
+
+	public function getSubscriptions()
+	{
+		return $this->_curlRequest(self::URL_SUBSCRIPTIONS, 'GET');
+	}
+
+	public function unsubscribeFromChannel($channelIden)
+	{
+		return $this->_curlRequest(self::URL_SUBSCRIPTIONS . '/' . $channelIden, 'DELETE');
+	}
+
+	public function getChannelInformation($channelTag)
+	{
+		return $this->_curlRequest(self::URL_CHANNEL_INFO, 'GET', array('tag' => $channelTag));
 	}
 
 
