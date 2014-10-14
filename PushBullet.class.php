@@ -129,10 +129,10 @@ class PushBullet {
 		if (!empty($recipient)) {
 			if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== FALSE) {
 				$queryData['email'] = $recipient;
-			}elseif(substr($recipient, 0,1) == "#"){
+			} else if (substr($recipient, 0, 1) == "#") {
 				$queryData['channel_tag'] = substr($recipient, 1);
 			}else{
-				$queryData['client_iden'] = $recipient;
+				$queryData['device_iden'] = $recipient;
 			}
 		}
 
