@@ -5,9 +5,9 @@ PushBullet for PHP
 Using this class, you can send push notifications to Android, iOS, Chrome and Firefox running **Pushbullet**. The following types of push notifications can be sent:
 * notes
 * links
+* addresses
+* checklists
 * files (smaller than 25 MB)
-* to-do lists
-* Google Maps addresses
 
 For more information, you can refer to these links:
 * **Official website**: https://www.pushbullet.com
@@ -22,9 +22,12 @@ For more information, you can refer to these links:
 * PHP >= 5.2.0
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
-* PHP for Windows users: if you are getting SSL certificate errors, see #25
+* PHP for Windows users: if you are getting SSL certificate errors, see issue #25
 
 ## Examples
+
+For more detailed usage information, consult the PHPDoc of the methods.
+
 ```php
 <?php
 
