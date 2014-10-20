@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class PushBullet
+ * Class Pushbullet
  */
-class PushBullet
+class Pushbullet
 {
     private $_apiKey;
 
@@ -20,14 +20,14 @@ class PushBullet
      *
      * @param string $apiKey API key.
      *
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function __construct($apiKey)
     {
         $this->_apiKey = $apiKey;
 
         if (!function_exists('curl_init')) {
-            throw new PushBulletException('cURL library is not loaded.');
+            throw new PushbulletException('cURL library is not loaded.');
         }
     }
 
@@ -39,7 +39,7 @@ class PushBullet
      * @param string $body      The note's message.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function pushNote($recipient, $title, $body = null)
     {
@@ -55,7 +55,7 @@ class PushBullet
      * @param string $body      A message associated with the link.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function pushLink($recipient, $title, $url, $body = null)
     {
@@ -70,7 +70,7 @@ class PushBullet
      * @param string $address   The place's address or a map search query.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function pushAddress($recipient, $name, $address)
     {
@@ -85,7 +85,7 @@ class PushBullet
      * @param string[] $items     The list items.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function pushList($recipient, $title, $items)
     {
@@ -100,7 +100,7 @@ class PushBullet
      * @param string $mimeType  The MIME type of the file.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function pushFile($recipient, $filePath, $mimeType = null)
     {
@@ -116,7 +116,7 @@ class PushBullet
      * @param int    $limit         Maximum number of objects on each page.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getPushHistory($modifiedAfter = 0, $cursor = null, $limit = null)
     {
@@ -140,7 +140,7 @@ class PushBullet
      * @param string $pushIden push_iden of the push notification.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function dismissPush($pushIden)
     {
@@ -153,7 +153,7 @@ class PushBullet
      * @param string $pushIden push_iden of the push notification.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function deletePush($pushIden)
     {
@@ -169,7 +169,7 @@ class PushBullet
      * @param int    $limit         Maximum number of objects on each page.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getDevices($modifiedAfter = 0, $cursor = null, $limit = null)
     {
@@ -193,7 +193,7 @@ class PushBullet
      * @param string $deviceIden device_iden of the device.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function deleteDevice($deviceIden)
     {
@@ -207,12 +207,12 @@ class PushBullet
      * @param string $email Email address.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function createContact($name, $email)
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new PushBulletException('Create contact: Invalid email address.');
+            throw new PushbulletException('Create contact: Invalid email address.');
         }
 
         $queryData = array(
@@ -232,7 +232,7 @@ class PushBullet
      * @param int    $limit         Maximum number of objects on each page.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getContacts($modifiedAfter = 0, $cursor = null, $limit = null)
     {
@@ -257,7 +257,7 @@ class PushBullet
      * @param string $name        New name of the contact.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function updateContact($contactIden, $name)
     {
@@ -270,7 +270,7 @@ class PushBullet
      * @param string $contactIden contact_iden of the contact.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function deleteContact($contactIden)
     {
@@ -281,7 +281,7 @@ class PushBullet
      * Get information about the current user.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getUserInformation()
     {
@@ -294,7 +294,7 @@ class PushBullet
      * @param array $preferences Preferences.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function updateUserPreferences($preferences)
     {
@@ -307,7 +307,7 @@ class PushBullet
      * @param string $channelTag Channel tag.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function subscribeToChannel($channelTag)
     {
@@ -318,7 +318,7 @@ class PushBullet
      * Get a list of the channels the current user is subscribed to.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getSubscriptions()
     {
@@ -331,7 +331,7 @@ class PushBullet
      * @param string $channelIden channel_iden of the channel.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function unsubscribeFromChannel($channelIden)
     {
@@ -344,7 +344,7 @@ class PushBullet
      * @param string $channelTag Channel tag.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     public function getChannelInformation($channelTag)
     {
@@ -362,7 +362,7 @@ class PushBullet
      * @param mixed  $arg3      Property of the push notification.
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     private function _push($recipient, $type, $arg1, $arg2 = null, $arg3 = null)
     {
@@ -415,11 +415,11 @@ class PushBullet
                 $fullFilePath = realpath($arg1);
 
                 if (!is_readable($fullFilePath)) {
-                    throw new PushBulletException('File: File does not exist or is unreadable.');
+                    throw new PushbulletException('File: File does not exist or is unreadable.');
                 }
 
                 if (filesize($fullFilePath) > 25 * 1024 * 1024) {
-                    throw new PushBulletException('File: File size exceeds 25 MB.');
+                    throw new PushbulletException('File: File size exceeds 25 MB.');
                 }
 
                 $queryData['file_name'] = basename($fullFilePath);
@@ -441,7 +441,7 @@ class PushBullet
                 break;
 
             default:
-                throw new PushBulletException('Unknown push type.');
+                throw new PushbulletException('Unknown push type.');
         }
 
         return $this->_curlRequest(self::URL_PUSHES, 'POST', $queryData);
@@ -458,7 +458,7 @@ class PushBullet
      * @param bool   $auth       Use the API key to authenticate
      *
      * @return object Response.
-     * @throws PushBulletException
+     * @throws PushbulletException
      */
     private function _curlRequest($url, $method, $data = null, $sendAsJSON = true, $auth = true)
     {
@@ -496,14 +496,14 @@ class PushBullet
         if ($response === false) {
             $curlError = curl_error($curl);
             curl_close($curl);
-            throw new PushBulletException('cURL Error: ' . $curlError);
+            throw new PushbulletException('cURL Error: ' . $curlError);
         }
 
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         if ($httpCode >= 400) {
             curl_close($curl);
-            throw new PushBulletException('HTTP Error ' . $httpCode);
+            throw new PushbulletException('HTTP Error ' . $httpCode);
         }
 
         curl_close($curl);
@@ -513,9 +513,9 @@ class PushBullet
 }
 
 /**
- * Class PushBulletException
+ * Class PushbulletException
  */
-class PushBulletException extends Exception
+class PushbulletException extends Exception
 {
-    // Exception thrown by PushBullet
+    // Exception thrown by Pushbullet
 }

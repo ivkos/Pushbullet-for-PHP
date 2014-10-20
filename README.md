@@ -1,5 +1,5 @@
-PushBullet for PHP
-==================
+Pushbullet
+==========
 
 ## Description
 Using this class, you can send push notifications to Android, iOS, Chrome and Firefox running **Pushbullet**. The following types of push notifications can be sent:
@@ -24,6 +24,18 @@ For more information, you can refer to these links:
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
 * PHP for Windows users: if you are getting SSL certificate errors, see issue #25
 
+## Install
+
+Via Composer:
+
+```json
+{
+    "require": {
+        "ivkos/pushbullet": "dev-composer"
+    }
+}
+```
+
 ## Examples
 
 For more detailed usage information, consult the PHPDoc of the methods.
@@ -31,12 +43,15 @@ For more detailed usage information, consult the PHPDoc of the methods.
 ```php
 <?php
 
-require 'PushBullet.class.php';
+require __DIR__ . '/vendor/autoload.php';
+
+// If you don't use Composer, include the class like so:
+// require 'src/Pushbullet.php';
 
 try {
   #### AUTHENTICATION ####
   // Get your API key here: https://www.pushbullet.com/account
-  $p = new PushBullet('YOUR_API_KEY');
+  $p = new Pushbullet('YOUR_API_KEY');
 
 
   #### Get methods
@@ -97,13 +112,10 @@ try {
   
   // Delete the contact with the 'iden' specified
   $p->deleteContact('0PpyWzARDK0w6et');
-} catch (PushBulletException $e) {
+} catch (PushbulletException $e) {
   // Exception handling
   die($e->getMessage());
 }
 
 ?>
 ```
-
-## Future
-I'll try to keep this PHP class up-to-date as the Pushbullet API changes. If you find any bugs or have feature requests/ideas, please use the issue tracker.
