@@ -2,6 +2,7 @@
 
 /**
  * Class PushBullet
+ * @version 2.6.0
  */
 class PushBullet
 {
