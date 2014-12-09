@@ -2,6 +2,8 @@
 
 /**
  * Class Pushbullet
+ * 
+ * @version 2.7.0
  */
 class Pushbullet
 {
@@ -14,6 +16,7 @@ class Pushbullet
     const URL_USERS          = 'https://api.pushbullet.com/v2/users';
     const URL_SUBSCRIPTIONS  = 'https://api.pushbullet.com/v2/subscriptions';
     const URL_CHANNEL_INFO   = 'https://api.pushbullet.com/v2/channel-info';
+    const URL_EPHEMERALS     = 'https://api.pushbullet.com/v2/ephemerals';
 
     /**
      * Pushbullet constructor.
@@ -351,6 +354,33 @@ class Pushbullet
         return $this->_curlRequest(self::URL_CHANNEL_INFO, 'GET', array('tag' => $channelTag));
     }
 
+    /**
+     * Send an SMS message.
+     *
+     * @param string $fromDeviceIden device_iden of the device that should send the SMS message. Only devices which
+     *                               have the 'has_sms' property set to true in their descriptions can send SMS
+     *                               messages. Use {@link getDevices()} to check if they're capable to do so.
+     * @param mixed  $toNumber       Phone number of the recipient.
+     * @param string $message        Text of the message.
+     *
+     * @return object Response. Since this is an undocumented API endpoint, it doesn't return meaningful responses.
+     * @throws PushBulletException
+     */
+    public function sendSms($fromDeviceIden, $toNumber, $message)
+    {
+        $data = array(
+            'type' => 'push',
+            'push' => array(
+                'type'               => 'messaging_extension_reply',
+                'package_name'       => 'com.pushbullet.android',
+                'source_user_iden'   => $this->getUserInformation()->iden,
+                'target_device_iden' => $fromDeviceIden,
+                'conversation_iden'  => $toNumber,
+                'message'            => $message
+            ));
+            
+        return $this->_curlRequest(self::URL_EPHEMERALS, 'POST', $data, true, true);
+    }
 
     /**
      * Send a push.
