@@ -22,7 +22,7 @@ For more information, you can refer to these links:
 * PHP >= 5.2.0
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
-* PHP for Windows users: if you are getting SSL certificate errors, see issue #25
+* PHP for Windows users: you can set a cacert.pem path as the second argument for the constructor or use setCaInfoPath (see examples)
 
 ## Install
 
@@ -53,7 +53,12 @@ try {
   // Get your API key here: https://www.pushbullet.com/account
   $p = new Pushbullet('YOUR_API_KEY');
 
-
+  // In case you are getting SSL errors (XAMPP on windows for example),
+  // you can set a cacert.pem path as the second argument for the constructor or use setCaInfoPath.
+  // $p = new Pushbullet('YOUR_API_KEY', $_SERVER['DOCUMENT_ROOT'].'/../cacert.pem');
+  // or:
+  // $p->setCaInfoPath($_SERVER['DOCUMENT_ROOT'].'/../cacert.pem');
+  
   #### Get methods
 
   // Print the definitions for your own devices. Useful for getting the 'iden' for using with the push methods.

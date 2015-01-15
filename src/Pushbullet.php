@@ -2,12 +2,23 @@
 
 /**
  * Class Pushbullet
- * 
+ *
  * @version 2.7.0
  */
 class Pushbullet
 {
     private $_apiKey;
+
+    /**
+     * Path to a cacert.pem file.
+     * @var string
+     *
+     * @link http://curl.haxx.se/libcurl/c/CURLOPT_CAINFO.html
+     * @link http://curl.haxx.se/ca/cacert.pem
+     *
+     * @see setCaInfoPath
+     */
+    private $_caInfoPath;
 
     const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
     const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
@@ -22,16 +33,35 @@ class Pushbullet
      * Pushbullet constructor.
      *
      * @param string $apiKey API key.
+     * @param string|null $caInfoPath path cart.pem file
      *
      * @throws PushbulletException
      */
-    public function __construct($apiKey)
+    public function __construct($apiKey, $caInfoPath = null)
     {
         $this->_apiKey = $apiKey;
 
         if (!function_exists('curl_init')) {
             throw new PushbulletException('cURL library is not loaded.');
         }
+
+        if($caInfoPath) {
+            $this->setCaInfoPath($caInfoPath);
+        }
+    }
+
+    /**
+     * Sets a path to a cacert.pem file.
+     * @param string $path Path to cacert.pem
+     *
+     * @throws PushbulletException
+     */
+    public function setCaInfoPath($path)
+    {
+        if(!is_file($path)) {
+            throw new PushbulletException("file '$path' was not found or is not a file.");
+        }
+        $this->_caInfoPath = realpath($path);
     }
 
     /**
@@ -378,7 +408,7 @@ class Pushbullet
                 'conversation_iden'  => $toNumber,
                 'message'            => $message
             ));
-            
+
         return $this->_curlRequest(self::URL_EPHEMERALS, 'POST', $data, true, true);
     }
 
@@ -502,6 +532,10 @@ class Pushbullet
 
         if ($auth) {
             curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
+        }
+
+        if($this->_caInfoPath){
+             curl_setopt($curl, CURLOPT_CAINFO, $this->_caInfoPath);
         }
 
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
