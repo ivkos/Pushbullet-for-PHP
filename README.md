@@ -53,7 +53,10 @@ try {
   // Get your API key here: https://www.pushbullet.com/account
   $p = new Pushbullet('YOUR_API_KEY');
 
-
+  // In case you are getting SSL errors (XAMPP on windows for example),
+  // you can set a cacert.pem path as the second argument for the constructor or use setCaInfoPath:
+  // $p->setCaInfoPath($_SERVER['DOCUMENT_ROOT'].'/../cacert.pem');
+  
   #### Get methods
 
   // Print the definitions for your own devices. Useful for getting the 'iden' for using with the push methods.
