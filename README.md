@@ -31,7 +31,7 @@ Via Composer:
 ```json
 {
     "require": {
-        "ivkos/pushbullet": "dev-composer"
+        "ivkos/pushbullet": "2.*"
     }
 }
 ```
