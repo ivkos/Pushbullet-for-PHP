@@ -53,6 +53,14 @@ try {
   // Get your API key here: https://www.pushbullet.com/account
   $p = new Pushbullet('YOUR_API_KEY');
 
+  // If you get SSL errors while using the library, you may need to point cURL to a CA certificate bundle
+  $p->addCurlCallback(function ($curl) {
+    // Get a CA certificate bundle here:
+    // https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
+
+    curl_setopt($curl, CURLOPT_CAINFO, 'C:/path/to/ca-bundle.crt');
+  });
+
 
   #### Get methods
 
