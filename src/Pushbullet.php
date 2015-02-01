@@ -3,7 +3,7 @@
 /**
  * Class Pushbullet
  * 
- * @version 2.7.1
+ * @version 2.7.2
  */
 class Pushbullet
 {
@@ -465,8 +465,13 @@ class Pushbullet
                 $response              = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET', $queryData);
                 $queryData['file_url'] = $response->file_url;
 
+                if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
+                    $response->data->file = new CURLFile($fullFilePath);
+                } else {
+                    $response->data->file = '@' . $fullFilePath;
+                }
+
                 // Upload the file
-                $response->data->file = '@' . $fullFilePath;
                 $this->_curlRequest($response->upload_url, 'POST', $response->data, false, false);
                 break;
 
