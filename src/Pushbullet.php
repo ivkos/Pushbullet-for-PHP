@@ -3,7 +3,7 @@
 /**
  * Class Pushbullet
  * 
- * @version 2.7.0
+ * @version 2.7.1
  */
 class Pushbullet
 {
@@ -533,7 +533,9 @@ class Pushbullet
 
         if ($httpCode >= 400) {
             curl_close($curl);
-            throw new PushbulletException('HTTP Error ' . $httpCode);
+            $responseParsed = json_decode($response);
+            throw new PushbulletException('HTTP Error ' . $httpCode .
+                ' (' . $responseParsed->error->type . '): ' . $responseParsed->error->message);
         }
 
         curl_close($curl);
