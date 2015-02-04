@@ -2,7 +2,7 @@ Pushbullet
 ==========
 
 ## Description
-Using this class, you can send push notifications to Android, iOS, Chrome and Firefox running **Pushbullet**. The following types of push notifications can be sent:
+Using this class, you can send push notifications to mobile and desktop devices running **Pushbullet**. The following types of push notifications can be sent:
 * notes
 * links
 * addresses
@@ -13,16 +13,12 @@ For more information, you can refer to these links:
 * **Official website**: https://www.pushbullet.com
 * **API reference**: https://docs.pushbullet.com
 * **Blog**: http://blog.pushbullet.com
-* **Android app**: https://play.google.com/store/apps/details?id=com.pushbullet.android
-* **iOS app**: https://itunes.apple.com/us/app/pushbullet/id810352052
-* **Chrome extension**: https://chrome.google.com/webstore/detail/pushbullet/chlffgpmiacpedhhbkiomidkjlcfhogd
-* **Firefox extension**: https://addons.mozilla.org/en-US/firefox/addon/pushbullet/
+* **Apps**: https://www.pushbullet.com/apps
 
 ## Requirements
-* PHP >= 5.2.0
+* PHP 5.4.0 or newer
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
-* PHP for Windows users: if you are getting SSL certificate errors, see issue #25
 
 ## Install
 
@@ -59,6 +55,10 @@ try {
     // https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt
 
     curl_setopt($curl, CURLOPT_CAINFO, 'C:/path/to/ca-bundle.crt');
+
+    // Alternatively, you can disable SSL certificate verification.
+    // However, this is a bad idea since it makes communication vulnerable to MITM attacks.
+    // curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
   });
 
 
