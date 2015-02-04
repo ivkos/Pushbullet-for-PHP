@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class Pushbullet
+ * Pushbullet
  *
- * @version 2.8.0
+ * @version 2.9.1
  */
 class Pushbullet
 {
@@ -47,7 +47,14 @@ class Pushbullet
      */
     public function pushNote($recipient, $title, $body = null)
     {
-        return $this->_push($recipient, 'note', $title, $body);
+        $data = array();
+
+        Pushbullet::_parseRecipient($recipient, $data);
+        $data['type']  = 'note';
+        $data['title'] = $title;
+        $data['body']  = $body;
+
+        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
@@ -63,7 +70,15 @@ class Pushbullet
      */
     public function pushLink($recipient, $title, $url, $body = null)
     {
-        return $this->_push($recipient, 'link', $title, $url, $body);
+        $data = array();
+
+        Pushbullet::_parseRecipient($recipient, $data);
+        $data['type']  = 'link';
+        $data['title'] = $title;
+        $data['url']   = $url;
+        $data['body']  = $body;
+
+        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
@@ -78,7 +93,14 @@ class Pushbullet
      */
     public function pushAddress($recipient, $name, $address)
     {
-        return $this->_push($recipient, 'address', $name, $address);
+        $data = array();
+
+        Pushbullet::_parseRecipient($recipient, $data);
+        $data['type']    = 'address';
+        $data['name']    = $name;
+        $data['address'] = $address;
+
+        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
@@ -91,24 +113,70 @@ class Pushbullet
      * @return object Response.
      * @throws PushbulletException
      */
-    public function pushList($recipient, $title, $items)
+    public function pushList($recipient, $title, array $items)
     {
-        return $this->_push($recipient, 'list', $title, $items);
+        $data = array();
+
+        Pushbullet::_parseRecipient($recipient, $data);
+        $data['type']  = 'list';
+        $data['title'] = $title;
+        $data['items'] = $items;
+
+        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
      * Push a file.
      *
-     * @param string $recipient Recipient. Can be device_iden, email or channel #tagname.
-     * @param string $filePath  The path of the file to push.
-     * @param string $mimeType  The MIME type of the file.
+     * @param string $recipient   Recipient. Can be device_iden, email or channel #tagname.
+     * @param string $filePath    The path of the file to push.
+     * @param string $mimeType    The MIME type of the file. If null, we'll try to guess it.
+     * @param string $title       The title of the push notification.
+     * @param string $body        The body of the push notification.
+     * @param string $altFileName Alternative file name to use instead of the original one.
+     *                            For example, you might want to push 'someFile.tmp' as 'image.jpg'.
      *
      * @return object Response.
      * @throws PushbulletException
      */
-    public function pushFile($recipient, $filePath, $mimeType = null)
+    public function pushFile($recipient, $filePath, $mimeType = null, $title = null, $body = null, $altFileName = null)
     {
-        return $this->_push($recipient, 'file', $filePath, $mimeType);
+        $data = array();
+
+        $fullFilePath = realpath($filePath);
+
+        if (!is_readable($fullFilePath)) {
+            throw new PushbulletException('File: File does not exist or is unreadable.');
+        }
+
+        if (filesize($fullFilePath) > 25 * 1024 * 1024) {
+            throw new PushbulletException('File: File size exceeds 25 MB.');
+        }
+
+        $data['file_name'] = $altFileName === null ? basename($fullFilePath) : $altFileName;
+
+        // Try to guess the MIME type if the argument is NULL
+        $data['file_type'] = $mimeType === null ? mime_content_type($fullFilePath) : $mimeType;
+
+        // Request authorization to upload the file
+        $response = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET', $data);
+        $data['file_url'] = $response->file_url;
+
+        if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
+            $response->data->file = new CURLFile($fullFilePath);
+        } else {
+            $response->data->file = '@' . $fullFilePath;
+        }
+
+        // Upload the file
+        $this->_curlRequest($response->upload_url, 'POST', $response->data, false, false);
+
+        Pushbullet::_parseRecipient($recipient, $data);
+        $data['type']  = 'file';
+        $data['title'] = $title;
+        $data['body']  = $body;
+
+        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
@@ -388,110 +456,30 @@ class Pushbullet
      *
      * @param callable $callback The callback function.
      */
-    public function addCurlCallback($callback) {
+    public function addCurlCallback(callable $callback) {
         $this->_curlCallback = $callback;
     }
 
-    /**
-     * Send a push.
-     *
-     * @param string $recipient Recipient of the push.
-     * @param mixed  $type      Type of the push notification.
-     * @param mixed  $arg1      Property of the push notification.
-     * @param mixed  $arg2      Property of the push notification.
-     * @param mixed  $arg3      Property of the push notification.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    private function _push($recipient, $type, $arg1, $arg2 = null, $arg3 = null)
-    {
-        $queryData = array();
 
+    /**
+     * Parse recipient.
+     *
+     * @param string $recipient Recipient string.
+     * @param array  $data      Data array to populate with the correct recipient parameter.
+     */
+    private static function _parseRecipient($recipient, array &$data) {
         if (!empty($recipient)) {
             if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== false) {
-                $queryData['email'] = $recipient;
+                $data['email'] = $recipient;
             } else {
                 if (substr($recipient, 0, 1) == "#") {
-                    $queryData['channel_tag'] = substr($recipient, 1);
+                    $data['channel_tag'] = substr($recipient, 1);
                 } else {
-                    $queryData['device_iden'] = $recipient;
+                    $data['device_iden'] = $recipient;
                 }
             }
         }
-
-        $queryData['type'] = $type;
-
-        switch ($type) {
-            case 'note':
-                $queryData['title'] = $arg1;
-                $queryData['body']  = $arg2;
-                break;
-
-
-            case 'link':
-                $queryData['title'] = $arg1;
-                $queryData['url']   = $arg2;
-
-                if ($arg3 !== null) {
-                    $queryData['body'] = $arg3;
-                }
-                break;
-
-
-            case 'address':
-                $queryData['name']    = $arg1;
-                $queryData['address'] = $arg2;
-                break;
-
-
-            case 'list':
-                $queryData['title'] = $arg1;
-                $queryData['items'] = $arg2;
-                break;
-
-
-            case 'file':
-                $fullFilePath = realpath($arg1);
-
-                if (!is_readable($fullFilePath)) {
-                    throw new PushbulletException('File: File does not exist or is unreadable.');
-                }
-
-                if (filesize($fullFilePath) > 25 * 1024 * 1024) {
-                    throw new PushbulletException('File: File size exceeds 25 MB.');
-                }
-
-                $queryData['file_name'] = basename($fullFilePath);
-
-                // Try to guess the MIME type if the argument is NULL
-                if ($arg2 === null) {
-                    $queryData['file_type'] = mime_content_type($fullFilePath);
-                } else {
-                    $queryData['file_type'] = $arg2;
-                }
-
-                // Request authorization to upload a file
-                $response              = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET', $queryData);
-                $queryData['file_url'] = $response->file_url;
-
-                if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
-                    $response->data->file = new CURLFile($fullFilePath);
-                } else {
-                    $response->data->file = '@' . $fullFilePath;
-                }
-
-                // Upload the file
-                $this->_curlRequest($response->upload_url, 'POST', $response->data, false, false);
-                break;
-
-            default:
-                throw new PushbulletException('Unknown push type.');
-        }
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $queryData);
     }
-
 
     /**
      * Send a request to a remote server using cURL.
