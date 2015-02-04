@@ -2,12 +2,13 @@
 
 /**
  * Class Pushbullet
- * 
- * @version 2.7.2
+ *
+ * @version 2.8.0
  */
 class Pushbullet
 {
     private $_apiKey;
+    private $_curlCallback;
 
     const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
     const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
@@ -378,8 +379,17 @@ class Pushbullet
                 'conversation_iden'  => $toNumber,
                 'message'            => $message
             ));
-            
+
         return $this->_curlRequest(self::URL_EPHEMERALS, 'POST', $data, true, true);
+    }
+
+    /**
+     * Add a callback function that will be invoked right before executing each cURL request.
+     *
+     * @param callable $callback The callback function.
+     */
+    public function addCurlCallback($callback) {
+        $this->_curlCallback = $callback;
     }
 
     /**
@@ -525,6 +535,11 @@ class Pushbullet
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
+
+        if ($this->_curlCallback !== null) {
+            $curlCallback = $this->_curlCallback;
+            $curlCallback($curl);
+        }
 
         $response = curl_exec($curl);
 
