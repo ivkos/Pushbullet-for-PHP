@@ -5,9 +5,14 @@
  *
  * @version 2.9.1
  */
-class Pushbullet
+namespace yesaulov\pushbullet;
+
+use yii\base\Component;
+
+
+class Pushbullet extends Component
 {
-    private $_apiKey;
+    public $apiKey;
     private $_curlCallback;
 
     const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
@@ -26,13 +31,13 @@ class Pushbullet
      *
      * @throws PushbulletException
      */
-    public function __construct($apiKey)
+    public function init()
     {
-        $this->_apiKey = $apiKey;
-
         if (!function_exists('curl_init')) {
-            throw new PushbulletException('cURL library is not loaded.');
+            throw new \PushbulletException('cURL library is not loaded.');
         }
+
+        parent::init();
     }
 
     /**
@@ -146,11 +151,11 @@ class Pushbullet
         $fullFilePath = realpath($filePath);
 
         if (!is_readable($fullFilePath)) {
-            throw new PushbulletException('File: File does not exist or is unreadable.');
+            throw new \PushbulletException('File: File does not exist or is unreadable.');
         }
 
         if (filesize($fullFilePath) > 25 * 1024 * 1024) {
-            throw new PushbulletException('File: File size exceeds 25 MB.');
+            throw new \PushbulletException('File: File size exceeds 25 MB.');
         }
 
         $data['file_name'] = $altFileName === null ? basename($fullFilePath) : $altFileName;
@@ -284,7 +289,7 @@ class Pushbullet
     public function createContact($name, $email)
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new PushbulletException('Create contact: Invalid email address.');
+            throw new \PushbulletException('Create contact: Invalid email address.');
         }
 
         $queryData = array(
@@ -504,7 +509,7 @@ class Pushbullet
         curl_setopt($curl, CURLOPT_URL, $url);
 
         if ($auth) {
-            curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
+            curl_setopt($curl, CURLOPT_USERPWD, $this->apiKey);
         }
 
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
@@ -534,7 +539,7 @@ class Pushbullet
         if ($response === false) {
             $curlError = curl_error($curl);
             curl_close($curl);
-            throw new PushbulletException('cURL Error: ' . $curlError);
+            throw new \PushbulletException('cURL Error: ' . $curlError);
         }
 
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -542,7 +547,7 @@ class Pushbullet
         if ($httpCode >= 400) {
             curl_close($curl);
             $responseParsed = json_decode($response);
-            throw new PushbulletException('HTTP Error ' . $httpCode .
+            throw new \PushbulletException('HTTP Error ' . $httpCode .
                 ' (' . $responseParsed->error->type . '): ' . $responseParsed->error->message);
         }
 
