@@ -457,7 +457,7 @@ class Pushbullet
      *
      * @param string $deviceIden device_iden of the device whose phonebook will be returned.
      *
-     * @return object Response.
+     * @return object[] Phonebook entries.
      * @throws PushbulletException
      */
     public function getPhonebook($deviceIden) {
