@@ -3,7 +3,7 @@
 /**
  * Pushbullet
  *
- * @version 2.9.1
+ * @version 2.10.0
  */
 class Pushbullet
 {
@@ -18,6 +18,7 @@ class Pushbullet
     const URL_SUBSCRIPTIONS  = 'https://api.pushbullet.com/v2/subscriptions';
     const URL_CHANNEL_INFO   = 'https://api.pushbullet.com/v2/channel-info';
     const URL_EPHEMERALS     = 'https://api.pushbullet.com/v2/ephemerals';
+    const URL_PHONEBOOK      = 'https://api.pushbullet.com/v2/permanents/phonebook';
 
     /**
      * Pushbullet constructor.
@@ -449,6 +450,18 @@ class Pushbullet
             ));
 
         return $this->_curlRequest(self::URL_EPHEMERALS, 'POST', $data, true, true);
+    }
+
+    /**
+     * Get a device's phonebook.
+     *
+     * @param string $deviceIden device_iden of the device whose phonebook will be returned.
+     *
+     * @return object Response.
+     * @throws PushbulletException
+     */
+    public function getPhonebook($deviceIden) {
+        return $this->_curlRequest(self::URL_PHONEBOOK . '_' . $deviceIden, 'GET')->phonebook;
     }
 
     /**
