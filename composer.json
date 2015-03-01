@@ -26,7 +26,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Pushbullet\\": "src/"
+            "Pushbullet\\": "src/Pushbullet"
         }
     }
 }

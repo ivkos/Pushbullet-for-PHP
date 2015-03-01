@@ -2,12 +2,11 @@
 
 namespace Pushbullet;
 
-
 class PhonebookEntry
 {
     private $deviceParent;
 
-    function __construct($properties, Device $parent)
+    public function __construct($properties, Device $parent)
     {
         foreach ($properties as $k => $v) {
             $this->$k = $v ?: null;

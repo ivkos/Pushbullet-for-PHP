@@ -1,13 +1,12 @@
 <?php
 
+namespace Pushbullet;
+
 /**
  * Pushbullet
  *
  * @version 3.0.0
  */
-
-namespace Pushbullet;
-
 class Pushbullet
 {
     private $apiKey;

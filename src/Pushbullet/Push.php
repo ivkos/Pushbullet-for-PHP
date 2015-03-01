@@ -2,7 +2,6 @@
 
 namespace Pushbullet;
 
-
 class Push
 {
     private $apiKey;
@@ -35,6 +34,6 @@ class Push
      */
     public function delete()
     {
-        Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES . '/' . $this->iden, 'DELETE', null, null, $this->apiKey);
+        Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
     }
 }

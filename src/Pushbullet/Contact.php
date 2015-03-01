@@ -2,7 +2,6 @@
 
 namespace Pushbullet;
 
-
 class Contact
 {
     use Pushable;

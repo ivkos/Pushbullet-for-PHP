@@ -65,7 +65,7 @@ class Device
      */
     public function getPhonebook()
     {
-        $entries = Pushbullet::sendCurlRequest(Pushbullet::URL_PHONEBOOK . '_' . $this->iden, 'GET', null, null,
+        $entries = Pushbullet::sendCurlRequest(Pushbullet::URL_PHONEBOOK . '_' . $this->iden, 'GET', null, false,
             $this->apiKey)->phonebook;
 
         $objEntries = [];

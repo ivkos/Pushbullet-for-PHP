@@ -212,5 +212,4 @@ trait Pushable
             $this->apiKey
         );
     }
-
 }

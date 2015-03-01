@@ -62,7 +62,7 @@ class Channel
             throw new Exceptions\PushbulletException("Not subscribed to this channel.");
         }
 
-        Pushbullet::sendCurlRequest(Pushbullet::URL_SUBSCRIPTIONS . '/' . $this->iden, 'DELETE', null, null,
+        Pushbullet::sendCurlRequest(Pushbullet::URL_SUBSCRIPTIONS . '/' . $this->iden, 'DELETE', null, false,
             $this->apiKey);
     }
 
