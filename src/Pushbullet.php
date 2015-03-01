@@ -3,18 +3,25 @@
 /**
  * Pushbullet
  *
- * @version 2.10.0
+ * @version 3.0.0
  */
+
+namespace Pushbullet;
+
 class Pushbullet
 {
-    private $_apiKey;
-    private $_curlCallback;
+    private $apiKey;
+    private static $curlCallback;
+    private $devices;
+    private $channels;
+    private $myChannels;
 
     const URL_PUSHES         = 'https://api.pushbullet.com/v2/pushes';
     const URL_DEVICES        = 'https://api.pushbullet.com/v2/devices';
     const URL_CONTACTS       = 'https://api.pushbullet.com/v2/contacts';
     const URL_UPLOAD_REQUEST = 'https://api.pushbullet.com/v2/upload-request';
     const URL_USERS          = 'https://api.pushbullet.com/v2/users';
+    const URL_CHANNELS       = 'https://api.pushbullet.com/v2/channels';
     const URL_SUBSCRIPTIONS  = 'https://api.pushbullet.com/v2/subscriptions';
     const URL_CHANNEL_INFO   = 'https://api.pushbullet.com/v2/channel-info';
     const URL_EPHEMERALS     = 'https://api.pushbullet.com/v2/ephemerals';
@@ -25,159 +32,15 @@ class Pushbullet
      *
      * @param string $apiKey API key.
      *
-     * @throws PushbulletException
+     * @throws Exceptions\PushbulletException
      */
     public function __construct($apiKey)
     {
-        $this->_apiKey = $apiKey;
+        $this->apiKey = $apiKey;
 
         if (!function_exists('curl_init')) {
-            throw new PushbulletException('cURL library is not loaded.');
+            throw new Exceptions\PushbulletException('cURL library is not loaded.');
         }
-    }
-
-    /**
-     * Push a note.
-     *
-     * @param string $recipient Recipient. Can be device_iden, email or channel #tagname.
-     * @param string $title     The note's title.
-     * @param string $body      The note's message.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function pushNote($recipient, $title, $body = null)
-    {
-        $data = array();
-
-        Pushbullet::_parseRecipient($recipient, $data);
-        $data['type']  = 'note';
-        $data['title'] = $title;
-        $data['body']  = $body;
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
-    }
-
-    /**
-     * Push a link.
-     *
-     * @param string $recipient Recipient. Can be device_iden, email or channel #tagname.
-     * @param string $title     The link's title.
-     * @param string $url       The URL to open.
-     * @param string $body      A message associated with the link.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function pushLink($recipient, $title, $url, $body = null)
-    {
-        $data = array();
-
-        Pushbullet::_parseRecipient($recipient, $data);
-        $data['type']  = 'link';
-        $data['title'] = $title;
-        $data['url']   = $url;
-        $data['body']  = $body;
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
-    }
-
-    /**
-     * Push an address.
-     *
-     * @param string $recipient Recipient. Can be device_iden, email or channel #tagname.
-     * @param string $name      The place's name.
-     * @param string $address   The place's address or a map search query.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function pushAddress($recipient, $name, $address)
-    {
-        $data = array();
-
-        Pushbullet::_parseRecipient($recipient, $data);
-        $data['type']    = 'address';
-        $data['name']    = $name;
-        $data['address'] = $address;
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
-    }
-
-    /**
-     * Push a checklist.
-     *
-     * @param string   $recipient Recipient. Can be device_iden, email or channel #tagname.
-     * @param string   $title     The list's title.
-     * @param string[] $items     The list items.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function pushList($recipient, $title, array $items)
-    {
-        $data = array();
-
-        Pushbullet::_parseRecipient($recipient, $data);
-        $data['type']  = 'list';
-        $data['title'] = $title;
-        $data['items'] = $items;
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
-    }
-
-    /**
-     * Push a file.
-     *
-     * @param string $recipient   Recipient. Can be device_iden, email or channel #tagname.
-     * @param string $filePath    The path of the file to push.
-     * @param string $mimeType    The MIME type of the file. If null, we'll try to guess it.
-     * @param string $title       The title of the push notification.
-     * @param string $body        The body of the push notification.
-     * @param string $altFileName Alternative file name to use instead of the original one.
-     *                            For example, you might want to push 'someFile.tmp' as 'image.jpg'.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function pushFile($recipient, $filePath, $mimeType = null, $title = null, $body = null, $altFileName = null)
-    {
-        $data = array();
-
-        $fullFilePath = realpath($filePath);
-
-        if (!is_readable($fullFilePath)) {
-            throw new PushbulletException('File: File does not exist or is unreadable.');
-        }
-
-        if (filesize($fullFilePath) > 25 * 1024 * 1024) {
-            throw new PushbulletException('File: File size exceeds 25 MB.');
-        }
-
-        $data['file_name'] = $altFileName === null ? basename($fullFilePath) : $altFileName;
-
-        // Try to guess the MIME type if the argument is NULL
-        $data['file_type'] = $mimeType === null ? mime_content_type($fullFilePath) : $mimeType;
-
-        // Request authorization to upload the file
-        $response = $this->_curlRequest(self::URL_UPLOAD_REQUEST, 'GET', $data);
-        $data['file_url'] = $response->file_url;
-
-        if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
-            $response->data->file = new CURLFile($fullFilePath);
-        } else {
-            $response->data->file = '@' . $fullFilePath;
-        }
-
-        // Upload the file
-        $this->_curlRequest($response->upload_url, 'POST', $response->data, false, false);
-
-        Pushbullet::_parseRecipient($recipient, $data);
-        $data['type']  = 'file';
-        $data['title'] = $title;
-        $data['body']  = $body;
-
-        return $this->_curlRequest(self::URL_PUSHES, 'POST', $data);
     }
 
     /**
@@ -188,12 +51,12 @@ class Pushbullet
      *                              documentation (https://docs.pushbullet.com/http/) for a detailed description.
      * @param int    $limit         Maximum number of objects on each page.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Push[] Pushes.
+     * @throws Exceptions\PushbulletException
      */
-    public function getPushHistory($modifiedAfter = 0, $cursor = null, $limit = null)
+    public function getPushes($modifiedAfter = 0, $cursor = null, $limit = null)
     {
-        $data                   = array();
+        $data = [];
         $data['modified_after'] = $modifiedAfter;
 
         if ($cursor !== null) {
@@ -204,33 +67,15 @@ class Pushbullet
             $data['limit'] = $limit;
         }
 
-        return $this->_curlRequest(self::URL_PUSHES, 'GET', $data);
-    }
+        $pushes = self::sendCurlRequest(self::URL_PUSHES, 'GET', $data, false, $this->apiKey)->pushes;
 
-    /**
-     * Dismiss a push.
-     *
-     * @param string $pushIden push_iden of the push notification.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function dismissPush($pushIden)
-    {
-        return $this->_curlRequest(self::URL_PUSHES . '/' . $pushIden, 'POST', array('dismissed' => true));
-    }
+        $objPushes = [];
 
-    /**
-     * Delete a push.
-     *
-     * @param string $pushIden push_iden of the push notification.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function deletePush($pushIden)
-    {
-        return $this->_curlRequest(self::URL_PUSHES . '/' . $pushIden, 'DELETE');
+        foreach ($pushes as $p) {
+            $objPushes[] = new Push($p, $this->apiKey);
+        }
+
+        return $objPushes;
     }
 
     /**
@@ -241,12 +86,12 @@ class Pushbullet
      *                              documentation (https://docs.pushbullet.com/http/) for a detailed description.
      * @param int    $limit         Maximum number of objects on each page.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Device[] Devices.
+     * @throws Exceptions\PushbulletException
      */
     public function getDevices($modifiedAfter = 0, $cursor = null, $limit = null)
     {
-        $data                   = array();
+        $data = [];
         $data['modified_after'] = $modifiedAfter;
 
         if ($cursor !== null) {
@@ -257,20 +102,42 @@ class Pushbullet
             $data['limit'] = $limit;
         }
 
-        return $this->_curlRequest(self::URL_DEVICES, 'GET', $data);
+        $devices = self::sendCurlRequest(self::URL_DEVICES, 'GET', $data, true, $this->apiKey)->devices;
+
+        $objDevices = [];
+
+        foreach ($devices as $d) {
+            $objDevices[] = new Device($d, $this->apiKey, function () {
+                return $this->getUserInformation();
+            });
+        }
+
+        $this->devices = $objDevices;
+
+        return $objDevices;
     }
 
     /**
-     * Delete a device.
+     * Target a device by its iden or nickname.
      *
-     * @param string $deviceIden device_iden of the device.
+     * @param string $idenOrNickname device_iden or nickname of the device.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Device The device.
+     * @throws Exceptions\NotFoundException
      */
-    public function deleteDevice($deviceIden)
+    public function device($idenOrNickname)
     {
-        return $this->_curlRequest(self::URL_DEVICES . '/' . $deviceIden, 'DELETE');
+        if ($this->devices === null) {
+            $this->getDevices();
+        }
+
+        foreach ($this->devices as $d) {
+            if ((isset($d->iden) && $d->iden == $idenOrNickname) || (isset($d->nickname) && $d->nickname == $idenOrNickname)) {
+                return $d;
+            }
+        }
+
+        throw new Exceptions\NotFoundException("Device not found.");
     }
 
     /**
@@ -279,21 +146,24 @@ class Pushbullet
      * @param string $name  Name.
      * @param string $email Email address.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Contact The newly created contact.
+     * @throws Exceptions\PushbulletException
      */
     public function createContact($name, $email)
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new PushbulletException('Create contact: Invalid email address.');
+            throw new Exceptions\PushbulletException('Create contact: Invalid email address.');
         }
 
-        $queryData = array(
+        $queryData = [
             'name'  => $name,
             'email' => $email
-        );
+        ];
 
-        return $this->_curlRequest(self::URL_CONTACTS, 'POST', $queryData);
+        return new Contact(
+            self::sendCurlRequest(self::URL_CONTACTS, 'POST', $queryData, true, $this->apiKey),
+            $this->apiKey
+        );
     }
 
     /**
@@ -304,12 +174,12 @@ class Pushbullet
      *                              documentation (https://docs.pushbullet.com/http/) for a detailed description.
      * @param int    $limit         Maximum number of objects on each page.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Contact[] Contacts.
+     * @throws Exceptions\PushbulletException
      */
     public function getContacts($modifiedAfter = 0, $cursor = null, $limit = null)
     {
-        $data                   = array();
+        $data = [];
         $data['modified_after'] = $modifiedAfter;
 
         if ($cursor !== null) {
@@ -320,45 +190,26 @@ class Pushbullet
             $data['limit'] = $limit;
         }
 
-        return $this->_curlRequest(self::URL_CONTACTS, 'GET', $data);
-    }
+        $contacts = self::sendCurlRequest(self::URL_CONTACTS, 'GET', $data, false, $this->apiKey)->contacts;
 
-    /**
-     * Update a contact's name.
-     *
-     * @param string $contactIden contact_iden of the contact.
-     * @param string $name        New name of the contact.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function updateContact($contactIden, $name)
-    {
-        return $this->_curlRequest(self::URL_CONTACTS . '/' . $contactIden, 'POST', array('name' => $name));
-    }
+        $objContacts = [];
 
-    /**
-     * Delete a contact.
-     *
-     * @param string $contactIden contact_iden of the contact.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function deleteContact($contactIden)
-    {
-        return $this->_curlRequest(self::URL_CONTACTS . '/' . $contactIden, 'DELETE');
+        foreach ($contacts as $c) {
+            $objContacts[] = new Contact($c, $this->apiKey);
+        }
+
+        return $objContacts;
     }
 
     /**
      * Get information about the current user.
      *
      * @return object Response.
-     * @throws PushbulletException
+     * @throws Exceptions\PushbulletException
      */
     public function getUserInformation()
     {
-        return $this->_curlRequest(self::URL_USERS . '/me', 'GET');
+        return self::sendCurlRequest(self::URL_USERS . '/me', 'GET', null, false, $this->apiKey);
     }
 
     /**
@@ -367,101 +218,94 @@ class Pushbullet
      * @param array $preferences Preferences.
      *
      * @return object Response.
-     * @throws PushbulletException
+     * @throws Exceptions\PushbulletException
      */
     public function updateUserPreferences($preferences)
     {
-        return $this->_curlRequest(self::URL_USERS . '/me', 'POST', array('preferences' => $preferences));
+        return self::sendCurlRequest(self::URL_USERS . '/me', 'POST', ['preferences' => $preferences], true,
+            $this->apiKey);
     }
 
     /**
-     * Subscribe to a channel.
+     * Target a channel to subscribe to, unsubscribe from, or get information.
      *
-     * @param string $channelTag Channel tag.
+     * @param $tag Channel tag.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Channel Channel.
+     * @throws Exceptions\PushbulletException
      */
-    public function subscribeToChannel($channelTag)
+    public function channel($tag)
     {
-        return $this->_curlRequest(self::URL_SUBSCRIPTIONS, 'POST', array('channel_tag' => $channelTag));
+        if ($this->channels === null) {
+            $this->getChannelSubscriptions();
+        }
+
+        if ($this->myChannels === null) {
+            $this->getMyChannels();
+        }
+
+        foreach ($this->channels as $c) {
+            if ($tag == $c->channel->tag) {
+                return $c;
+            }
+        }
+
+        foreach ($this->myChannels as $c) {
+            if ($tag == $c->tag) {
+                $c->myChannel = true;
+
+                return $c;
+            }
+        }
+
+        return new Channel(["tag" => $tag], $this->apiKey);
     }
 
     /**
      * Get a list of the channels the current user is subscribed to.
      *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Channel[] Channels.
+     * @throws Exceptions\ConnectionException
      */
-    public function getSubscriptions()
+    public function getChannelSubscriptions()
     {
-        return $this->_curlRequest(self::URL_SUBSCRIPTIONS, 'GET');
+        $subscriptions = self::sendCurlRequest(self::URL_SUBSCRIPTIONS, 'GET', null, false, $this->apiKey)->subscriptions;
+
+        $objChannels = [];
+
+        foreach ($subscriptions as $s) {
+            if (!empty($s->active)) {
+                $objChannels[] = new Channel($s, $this->apiKey);
+            }
+        }
+
+        $this->channels = $objChannels;
+
+        return $objChannels;
     }
 
     /**
-     * Unsubscribe from a channel.
+     * Get a list of channels created by the current user.
      *
-     * @param string $channelIden channel_iden of the channel.
-     *
-     * @return object Response.
-     * @throws PushbulletException
+     * @return Channel[] Channels.
+     * @throws Exceptions\ConnectionException
      */
-    public function unsubscribeFromChannel($channelIden)
+    public function getMyChannels()
     {
-        return $this->_curlRequest(self::URL_SUBSCRIPTIONS . '/' . $channelIden, 'DELETE');
-    }
+        $myChannels = self::sendCurlRequest(self::URL_CHANNELS, 'GET', null, false, $this->apiKey)->channels;
 
-    /**
-     * Get information about a channel.
-     *
-     * @param string $channelTag Channel tag.
-     *
-     * @return object Response.
-     * @throws PushbulletException
-     */
-    public function getChannelInformation($channelTag)
-    {
-        return $this->_curlRequest(self::URL_CHANNEL_INFO, 'GET', array('tag' => $channelTag));
-    }
+        $objChannels = [];
 
-    /**
-     * Send an SMS message.
-     *
-     * @param string $fromDeviceIden device_iden of the device that should send the SMS message. Only devices which
-     *                               have the 'has_sms' property set to true in their descriptions can send SMS
-     *                               messages. Use {@link getDevices()} to check if they're capable to do so.
-     * @param mixed  $toNumber       Phone number of the recipient.
-     * @param string $message        Text of the message.
-     *
-     * @return object Response. Since this is an undocumented API endpoint, it doesn't return meaningful responses.
-     * @throws PushBulletException
-     */
-    public function sendSms($fromDeviceIden, $toNumber, $message)
-    {
-        $data = array(
-            'type' => 'push',
-            'push' => array(
-                'type'               => 'messaging_extension_reply',
-                'package_name'       => 'com.pushbullet.android',
-                'source_user_iden'   => $this->getUserInformation()->iden,
-                'target_device_iden' => $fromDeviceIden,
-                'conversation_iden'  => $toNumber,
-                'message'            => $message
-            ));
+        foreach ($myChannels as $c) {
+            if (!empty($c->active)) {
+                $c->myChannel = true;
+                $objChannels[] = new Channel($c, $this->apiKey);
+            }
+        }
 
-        return $this->_curlRequest(self::URL_EPHEMERALS, 'POST', $data, true, true);
-    }
+        $this->myChannels = $objChannels;
 
-    /**
-     * Get a device's phonebook.
-     *
-     * @param string $deviceIden device_iden of the device whose phonebook will be returned.
-     *
-     * @return object[] Phonebook entries.
-     * @throws PushbulletException
-     */
-    public function getPhonebook($deviceIden) {
-        return $this->_curlRequest(self::URL_PHONEBOOK . '_' . $deviceIden, 'GET')->phonebook;
+        return $objChannels;
     }
 
     /**
@@ -469,29 +313,9 @@ class Pushbullet
      *
      * @param callable $callback The callback function.
      */
-    public function addCurlCallback(callable $callback) {
-        $this->_curlCallback = $callback;
-    }
-
-
-    /**
-     * Parse recipient.
-     *
-     * @param string $recipient Recipient string.
-     * @param array  $data      Data array to populate with the correct recipient parameter.
-     */
-    private static function _parseRecipient($recipient, array &$data) {
-        if (!empty($recipient)) {
-            if (filter_var($recipient, FILTER_VALIDATE_EMAIL) !== false) {
-                $data['email'] = $recipient;
-            } else {
-                if (substr($recipient, 0, 1) == "#") {
-                    $data['channel_tag'] = substr($recipient, 1);
-                } else {
-                    $data['device_iden'] = $recipient;
-                }
-            }
-        }
+    public static function setCurlCallback(callable $callback)
+    {
+        self::$curlCallback = $callback;
     }
 
     /**
@@ -501,12 +325,12 @@ class Pushbullet
      * @param string $method     HTTP method.
      * @param array  $data       Query data.
      * @param bool   $sendAsJSON Send the request as JSON.
-     * @param bool   $auth       Use the API key to authenticate
+     * @param string $apiKey     Use this API key to authenticate
      *
      * @return object Response.
-     * @throws PushbulletException
+     * @throws Exceptions\ConnectionException
      */
-    private function _curlRequest($url, $method, $data = null, $sendAsJSON = true, $auth = true)
+    public static function sendCurlRequest($url, $method, $data = null, $sendAsJSON = true, $apiKey = null)
     {
         $curl = curl_init();
 
@@ -516,8 +340,8 @@ class Pushbullet
 
         curl_setopt($curl, CURLOPT_URL, $url);
 
-        if ($auth) {
-            curl_setopt($curl, CURLOPT_USERPWD, $this->_apiKey);
+        if ($apiKey) {
+            curl_setopt($curl, CURLOPT_USERPWD, $apiKey);
         }
 
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
@@ -525,10 +349,10 @@ class Pushbullet
         if ($method == 'POST' && $data !== null) {
             if ($sendAsJSON) {
                 $data = json_encode($data);
-                curl_setopt($curl, CURLOPT_HTTPHEADER, array(
+                curl_setopt($curl, CURLOPT_HTTPHEADER, [
                     'Content-Type: application/json',
                     'Content-Length: ' . strlen($data)
-                ));
+                ]);
             }
 
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
@@ -537,8 +361,8 @@ class Pushbullet
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, false);
 
-        if ($this->_curlCallback !== null) {
-            $curlCallback = $this->_curlCallback;
+        if (self::$curlCallback !== null) {
+            $curlCallback = self::$curlCallback;
             $curlCallback($curl);
         }
 
@@ -547,7 +371,7 @@ class Pushbullet
         if ($response === false) {
             $curlError = curl_error($curl);
             curl_close($curl);
-            throw new PushbulletException('cURL Error: ' . $curlError);
+            throw new Exceptions\ConnectionException('cURL Error: ' . $curlError);
         }
 
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -555,7 +379,7 @@ class Pushbullet
         if ($httpCode >= 400) {
             curl_close($curl);
             $responseParsed = json_decode($response);
-            throw new PushbulletException('HTTP Error ' . $httpCode .
+            throw new Exceptions\ConnectionException('HTTP Error ' . $httpCode .
                 ' (' . $responseParsed->error->type . '): ' . $responseParsed->error->message);
         }
 
@@ -563,12 +387,4 @@ class Pushbullet
 
         return json_decode($response);
     }
-}
-
-/**
- * Class PushbulletException
- */
-class PushbulletException extends Exception
-{
-    // Exception thrown by Pushbullet
 }
