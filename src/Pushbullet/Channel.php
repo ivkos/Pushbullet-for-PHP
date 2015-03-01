@@ -7,8 +7,11 @@ class Channel
     use Pushable;
 
     private $channelTag;
-    private $apiKey;
     private $type;
+
+    private $tag, $iden;
+
+    var $myChannel = false;
 
     public function __construct($properties, $apiKey)
     {

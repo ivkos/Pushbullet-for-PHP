@@ -6,6 +6,8 @@ class PhonebookEntry
 {
     private $deviceParent;
 
+    private $phone;
+
     public function __construct($properties, Device $parent)
     {
         foreach ($properties as $k => $v) {

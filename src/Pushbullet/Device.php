@@ -6,8 +6,9 @@ class Device
 {
     use Pushable;
 
-    private $apiKey;
     private $currentUserCallback;
+
+    private $iden, $has_sms, $active;
 
     public function __construct($properties, $apiKey, callable $currentUserCallback)
     {

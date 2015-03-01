@@ -339,7 +339,7 @@ class Pushbullet
 
         curl_setopt($curl, CURLOPT_URL, $url);
 
-        if ($apiKey) {
+        if (!empty($apiKey)) {
             curl_setopt($curl, CURLOPT_USERPWD, $apiKey);
         }
 

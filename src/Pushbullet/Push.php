@@ -6,6 +6,8 @@ class Push
 {
     private $apiKey;
 
+    private $iden;
+
     public function __construct($pushProperties, $apiKey)
     {
         foreach ($pushProperties as $k => $v) {

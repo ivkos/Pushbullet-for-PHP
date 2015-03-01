@@ -6,7 +6,7 @@ class Contact
 {
     use Pushable;
 
-    private $apiKey;
+    private $email, $iden, $active;
 
     public function __construct($properties, $apiKey)
     {
