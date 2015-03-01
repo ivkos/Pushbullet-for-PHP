@@ -7,7 +7,8 @@ trait Pushable
     private $recipientType;
     private $recipient;
 
-    protected $pushable, $apiKey;
+    protected $pushable;
+    protected $apiKey;
 
     /**
      * @param string $recipientType Recipient type. Can be device/channel/email.

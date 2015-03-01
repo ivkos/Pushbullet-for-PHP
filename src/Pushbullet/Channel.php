@@ -9,9 +9,10 @@ class Channel
     private $channelTag;
     private $type;
 
-    private $tag, $iden;
+    private $tag;
+    private $iden;
 
-    var $myChannel = false;
+    public $myChannel = false;
 
     public function __construct($properties, $apiKey)
     {

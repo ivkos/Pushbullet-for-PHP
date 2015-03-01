@@ -8,7 +8,9 @@ class Device
 
     private $currentUserCallback;
 
-    private $iden, $has_sms, $active;
+    private $iden;
+    private $has_sms;
+    private $active;
 
     public function __construct($properties, $apiKey, callable $currentUserCallback)
     {
@@ -80,7 +82,6 @@ class Device
     /**
      * Delete the device.
      *
-     * @return object
      * @throws Exceptions\ConnectionException
      */
     public function delete()

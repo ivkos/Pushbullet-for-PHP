@@ -131,7 +131,9 @@ class Pushbullet
         }
 
         foreach ($this->devices as $d) {
-            if ((isset($d->iden) && $d->iden == $idenOrNickname) || (isset($d->nickname) && $d->nickname == $idenOrNickname)) {
+            if ((isset($d->iden) && $d->iden == $idenOrNickname) ||
+                (isset($d->nickname) && $d->nickname == $idenOrNickname)
+            ) {
                 return $d;
             }
         }
@@ -268,7 +270,8 @@ class Pushbullet
      */
     public function getChannelSubscriptions()
     {
-        $subscriptions = self::sendCurlRequest(self::URL_SUBSCRIPTIONS, 'GET', null, false, $this->apiKey)->subscriptions;
+        $subscriptions = self::sendCurlRequest(self::URL_SUBSCRIPTIONS, 'GET', null, false,
+            $this->apiKey)->subscriptions;
 
         $objChannels = [];
 
