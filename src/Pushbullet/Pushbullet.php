@@ -106,9 +106,7 @@ class Pushbullet
         $objDevices = [];
 
         foreach ($devices as $d) {
-            $objDevices[] = new Device($d, $this->apiKey, function () {
-                return $this->getUserInformation();
-            });
+            $objDevices[] = new Device($d, $this->apiKey);
         }
 
         $this->devices = $objDevices;

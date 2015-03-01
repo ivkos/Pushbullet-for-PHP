@@ -6,20 +6,17 @@ class Device
 {
     use Pushable;
 
-    private $currentUserCallback;
-
     private $iden;
     private $has_sms;
     private $active;
 
-    public function __construct($properties, $apiKey, callable $currentUserCallback)
+    public function __construct($properties, $apiKey)
     {
         foreach ($properties as $k => $v) {
             $this->$k = $v ?: null;
         }
 
         $this->apiKey = $apiKey;
-        $this->currentUserCallback = $currentUserCallback;
 
         $this->setPushableRecipient("device", $this->iden);
     }
@@ -40,14 +37,12 @@ class Device
             throw new Exceptions\NoSmsException("Device cannot send SMS messages.");
         }
 
-        $currentUserCallback = $this->currentUserCallback;
-
         $data = [
             'type' => 'push',
             'push' => [
                 'type'               => 'messaging_extension_reply',
                 'package_name'       => 'com.pushbullet.android',
-                'source_user_iden'   => $currentUserCallback()->iden,
+                'source_user_iden'   => (new Pushbullet($this->apiKey))->getUserInformation()->iden,
                 'target_device_iden' => $this->iden,
                 'conversation_iden'  => $toNumber,
                 'message'            => $message
@@ -87,7 +82,7 @@ class Device
     public function delete()
     {
         if (isset($this->active) && $this->active == 1) {
-            Pushbullet::sendCurlRequest(Pushbullet::URL_DEVICES . '/' . $this->iden, 'DELETE', null, true,
+            Pushbullet::sendCurlRequest(Pushbullet::URL_DEVICES . '/' . $this->iden, 'DELETE', null, false,
                 $this->apiKey);
         }
     }
