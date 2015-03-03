@@ -2,15 +2,20 @@
 
 namespace Pushbullet;
 
+/**
+ * Push Notification
+ *
+ * @package Pushbullet
+ */
 class Push
 {
     private $apiKey;
 
-    private $iden;
+    public $iden;
 
-    public function __construct($pushProperties, $apiKey)
+    public function __construct($properties, $apiKey)
     {
-        foreach ($pushProperties as $k => $v) {
+        foreach ($properties as $k => $v) {
             $this->$k = $v ?: null;
         }
 
@@ -18,24 +23,24 @@ class Push
     }
 
     /**
-     * Dismiss the push.
+     * Dismiss the push notification.
      *
-     * @return Push The same push, now dismissed.
+     * @return Push The same push notification, now dismissed.
      * @throws Exceptions\ConnectionException
      */
     public function dismiss()
     {
-        return new Push(Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES . '/' . $this->iden, 'POST',
+        return new Push(Connection::sendCurlRequest(Connection::URL_PUSHES . '/' . $this->iden, 'POST',
             ['dismissed' => true], true, $this->apiKey), $this->apiKey);
     }
 
     /**
-     * Delete the push.
+     * Delete the push notification.
      *
      * @throws Exceptions\ConnectionException
      */
     public function delete()
     {
-        Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
+        Connection::sendCurlRequest(Connection::URL_PUSHES . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
     }
 }

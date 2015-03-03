@@ -2,13 +2,17 @@
 
 namespace Pushbullet;
 
+/**
+ * Contact
+ *
+ * @package Pushbullet
+ */
 class Contact
 {
     use Pushable;
 
-    private $email;
-    private $iden;
-    private $active;
+    public $email;
+    public $iden;
 
     public function __construct($properties, $apiKey)
     {
@@ -36,7 +40,7 @@ class Contact
     public function setName($name)
     {
         return new Contact(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_CONTACTS . '/' . $this->iden, 'POST', ['name' => $name], true,
+            Connection::sendCurlRequest(Connection::URL_CONTACTS . '/' . $this->iden, 'POST', ['name' => $name], true,
                 $this->apiKey), $this->apiKey
         );
     }
@@ -48,9 +52,7 @@ class Contact
      */
     public function delete()
     {
-        if (isset($this->active) && $this->active == 1) {
-            Pushbullet::sendCurlRequest(Pushbullet::URL_CONTACTS . '/' . $this->iden, 'DELETE', null, false,
-                $this->apiKey);
-        }
+        Connection::sendCurlRequest(Connection::URL_CONTACTS . '/' . $this->iden, 'DELETE', null, false,
+            $this->apiKey);
     }
 }

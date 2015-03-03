@@ -2,13 +2,17 @@
 
 namespace Pushbullet;
 
+/**
+ * Device
+ *
+ * @package Pushbullet
+ */
 class Device
 {
     use Pushable;
 
-    private $iden;
-    private $has_sms;
-    private $active;
+    public $iden;
+    public $has_sms;
 
     public function __construct($properties, $apiKey)
     {
@@ -29,7 +33,7 @@ class Device
      *
      * @return Push
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\NoSmsException
+     * @throws Exceptions\NoSmsException Thrown if the device cannot send SMS messages.
      */
     public function sendSms($toNumber, $message)
     {
@@ -50,7 +54,7 @@ class Device
         ];
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_EPHEMERALS, 'POST', $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_EPHEMERALS, 'POST', $data, true, $this->apiKey),
             $this->apiKey
         );
     }
@@ -63,7 +67,7 @@ class Device
      */
     public function getPhonebook()
     {
-        $entries = Pushbullet::sendCurlRequest(Pushbullet::URL_PHONEBOOK . '_' . $this->iden, 'GET', null, false,
+        $entries = Connection::sendCurlRequest(Connection::URL_PHONEBOOK . '_' . $this->iden, 'GET', null, false,
             $this->apiKey)->phonebook;
 
         $objEntries = [];
@@ -81,9 +85,7 @@ class Device
      */
     public function delete()
     {
-        if (isset($this->active) && $this->active == 1) {
-            Pushbullet::sendCurlRequest(Pushbullet::URL_DEVICES . '/' . $this->iden, 'DELETE', null, false,
-                $this->apiKey);
-        }
+        Connection::sendCurlRequest(Connection::URL_DEVICES . '/' . $this->iden, 'DELETE', null, false,
+            $this->apiKey);
     }
 }

@@ -2,12 +2,17 @@
 
 namespace Pushbullet;
 
+/**
+ * Target that can receive push notifications.
+ *
+ * @package Pushbullet
+ */
 trait Pushable
 {
     private $recipientType;
     private $recipient;
 
-    protected $pushable;
+    public $pushable;
     protected $apiKey;
 
     /**
@@ -18,10 +23,6 @@ trait Pushable
      */
     protected function setPushableRecipient($recipientType, $recipient)
     {
-        if (empty($recipient)) {
-            throw new Exceptions\InvalidRecipientException();
-        }
-
         if ($recipientType === "device") {
             $this->recipientType = "device_iden";
             $this->recipient = $recipient;
@@ -33,10 +34,10 @@ trait Pushable
                 $this->recipientType = "email";
                 $this->recipient = $recipient;
             } else {
-                throw new Exceptions\InvalidRecipientException();
+                throw new Exceptions\InvalidRecipientException("Invalid email address.");
             }
         } else {
-            throw new Exceptions\InvalidRecipientException();
+            throw new Exceptions\InvalidRecipientException("Unknown recipient type.");
         }
     }
 
@@ -46,15 +47,13 @@ trait Pushable
      * @param string $title The note's title.
      * @param string $body  The note's body.
      *
-     * @return Push
+     * @return Push Push notification.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
     public function pushNote($title, $body = null)
     {
-        if (empty($this->pushable)) {
-            throw new Exceptions\NotPushableException();
-        }
+        self::checkPushable();
 
         $data = [];
         $data[$this->recipientType] = $this->recipient;
@@ -63,7 +62,7 @@ trait Pushable
         $data['body'] = $body;
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES, "POST", $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
             $this->apiKey
         );
     }
@@ -75,15 +74,13 @@ trait Pushable
      * @param string $url   The URL to open.
      * @param string $body  A message associated with the link.
      *
-     * @return Push
+     * @return Push Push notification.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
     public function pushLink($title, $url, $body = null)
     {
-        if (empty($this->pushable)) {
-            throw new Exceptions\NotPushableException();
-        }
+        self::checkPushable();
 
         $data = [];
         $data[$this->recipientType] = $this->recipient;
@@ -93,7 +90,7 @@ trait Pushable
         $data['body'] = $body;
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES, "POST", $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
             $this->apiKey
         );
     }
@@ -104,15 +101,13 @@ trait Pushable
      * @param string $name    The place's name.
      * @param string $address The place's address or a map search query.
      *
-     * @return Push
+     * @return Push Push notification.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
     public function pushAddress($name, $address)
     {
-        if (empty($this->pushable)) {
-            throw new Exceptions\NotPushableException();
-        }
+        self::checkPushable();
 
         $data = [];
         $data[$this->recipientType] = $this->recipient;
@@ -121,7 +116,7 @@ trait Pushable
         $data['address'] = $address;
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES, "POST", $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
             $this->apiKey
         );
     }
@@ -132,15 +127,13 @@ trait Pushable
      * @param string   $title The list's title.
      * @param string[] $items The items in the list.
      *
-     * @return Push
+     * @return Push Push notification.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
     public function pushList($title, array $items)
     {
-        if (empty($this->pushable)) {
-            throw new Exceptions\NotPushableException();
-        }
+        self::checkPushable();
 
         $data = [];
         $data[$this->recipientType] = $this->recipient;
@@ -149,7 +142,7 @@ trait Pushable
         $data['items'] = $items;
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES, "POST", $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
             $this->apiKey
         );
     }
@@ -164,23 +157,22 @@ trait Pushable
      * @param string $altFileName Alternative file name to use instead of the original one.
      *                            For example, you might want to push 'someFile.tmp' as 'image.jpg'.
      *
-     * @return Push
+     * @return Push Push notification.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\FilePushException
+     * @throws Exceptions\NotFoundException Thrown if the file does not exist or is unreadable.
      * @throws Exceptions\NotPushableException
      */
     public function pushFile($filePath, $mimeType = null, $title = null, $body = null, $altFileName = null)
     {
-        if (empty($this->pushable)) {
-            throw new Exceptions\NotPushableException();
-        }
+        self::checkPushable();
 
         $data = [];
 
         $fullFilePath = realpath($filePath);
 
         if (!is_readable($fullFilePath)) {
-            throw new Exceptions\FilePushException('File does not exist or is unreadable.');
+            throw new Exceptions\NotFoundException('File does not exist or is unreadable.');
         }
 
         if (filesize($fullFilePath) > 25 * 1024 * 1024) {
@@ -193,7 +185,7 @@ trait Pushable
         $data['file_type'] = $mimeType === null ? mime_content_type($fullFilePath) : $mimeType;
 
         // Request authorization to upload the file
-        $response = Pushbullet::sendCurlRequest(Pushbullet::URL_UPLOAD_REQUEST, 'GET', $data, true, $this->apiKey);
+        $response = Connection::sendCurlRequest(Connection::URL_UPLOAD_REQUEST, 'GET', $data, true, $this->apiKey);
         $data['file_url'] = $response->file_url;
 
         if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
@@ -203,7 +195,7 @@ trait Pushable
         }
 
         // Upload the file
-        Pushbullet::sendCurlRequest($response->upload_url, 'POST', $response->data, false, null);
+        Connection::sendCurlRequest($response->upload_url, 'POST', $response->data, false, null);
 
         $data[$this->recipientType] = $this->recipient;
         $data['type'] = 'file';
@@ -211,8 +203,20 @@ trait Pushable
         $data['body'] = $body;
 
         return new Push(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_PUSHES, 'POST', $data, true, $this->apiKey),
+            Connection::sendCurlRequest(Connection::URL_PUSHES, 'POST', $data, true, $this->apiKey),
             $this->apiKey
         );
+    }
+
+    /**
+     * Check if target is pushable.
+     *
+     * @throws Exceptions\NotPushableException
+     */
+    private function checkPushable()
+    {
+        if (empty($this->pushable)) {
+            throw new Exceptions\NotPushableException("Cannot push to this target.");
+        }
     }
 }

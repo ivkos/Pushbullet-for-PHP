@@ -2,6 +2,11 @@
 
 namespace Pushbullet;
 
+/**
+ * Channel
+ *
+ * @package Pushbullet
+ */
 class Channel
 {
     use Pushable;
@@ -9,8 +14,8 @@ class Channel
     private $channelTag;
     private $type;
 
-    private $tag;
-    private $iden;
+    public $tag;
+    public $iden;
 
     public $myChannel = false;
 
@@ -38,35 +43,46 @@ class Channel
      *
      * @return Channel Subscription.
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\PushbulletException
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ChannelException
      */
     public function subscribe()
     {
         if ($this->type == "subscription") {
-            throw new Exceptions\PushbulletException("Already subscribed to this channel.");
-        } else if (!empty($this->myChannel)) {
-            throw new Exceptions\PushbulletException("Cannot subscribe to own channel.");
+            throw new Exceptions\ChannelException("Already subscribed to this channel.");
         }
 
-        return new Channel(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_SUBSCRIPTIONS, 'POST', ['channel_tag' => $this->channelTag],
-                true, $this->apiKey), $this->apiKey
-        );
+        if (!empty($this->myChannel)) {
+            throw new Exceptions\ChannelException("Cannot subscribe to own channel.");
+        }
+
+        try {
+            return new Channel(
+                Connection::sendCurlRequest(Connection::URL_SUBSCRIPTIONS, 'POST', ['channel_tag' => $this->channelTag],
+                    true, $this->apiKey), $this->apiKey
+            );
+        } catch (Exceptions\ConnectionException $e) {
+            if ($e->getCode() === 400) {
+                throw new Exceptions\NotFoundException("Channel does not exist.");
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
      * Unsubscribe from the channel.
      *
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\PushbulletException
+     * @throws Exceptions\ChannelException Thrown if the user is already subscribed to the channel.
      */
     public function unsubscribe()
     {
         if ($this->type != "subscription") {
-            throw new Exceptions\PushbulletException("Not subscribed to this channel.");
+            throw new Exceptions\ChannelException("The current user is not subscribed to this channel.");
         }
 
-        Pushbullet::sendCurlRequest(Pushbullet::URL_SUBSCRIPTIONS . '/' . $this->iden, 'DELETE', null, false,
+        Connection::sendCurlRequest(Connection::URL_SUBSCRIPTIONS . '/' . $this->iden, 'DELETE', null, false,
             $this->apiKey);
     }
 
@@ -75,14 +91,23 @@ class Channel
      *
      * @return Channel
      * @throws Exceptions\ConnectionException
+     * @throws Exceptions\NotFoundException
      */
     public function getInformation()
     {
-        return new Channel(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_CHANNEL_INFO, 'GET', ['tag' => $this->channelTag], false,
-                $this->apiKey),
-            $this->apiKey
-        );
+        try {
+            return new Channel(
+                Connection::sendCurlRequest(Connection::URL_CHANNEL_INFO, 'GET', ['tag' => $this->channelTag], false,
+                    $this->apiKey),
+                $this->apiKey
+            );
+        } catch (Exceptions\ConnectionException $e) {
+            if ($e->getCode() === 400) {
+                throw new Exceptions\NotFoundException("Channel does not exist.");
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -93,18 +118,18 @@ class Channel
      *
      * @return Channel The newly created channel.
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\PushbulletException
+     * @throws Exceptions\ChannelException Thrown if the channel already exists.
      */
     public function create($title, $description)
     {
         if ($this->type == "subscription" || !empty($this->myChannel)) {
-            throw new Exceptions\PushbulletException("Channel already exists.");
+            throw new Exceptions\ChannelException("Channel already exists.");
         }
 
         // TODO Ability to add a picture for the channel.
 
         return new Channel(
-            Pushbullet::sendCurlRequest(Pushbullet::URL_CHANNELS, 'POST', [
+            Connection::sendCurlRequest(Connection::URL_CHANNELS, 'POST', [
                 'name'        => $title,
                 'description' => $description,
                 'tag'         => $this->channelTag
@@ -114,17 +139,17 @@ class Channel
     }
 
     /**
-     * Delete the channel if it was created by you.
+     * Delete the channel if it is owned by the current user.
      *
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\PushbulletException
+     * @throws Exceptions\ChannelException Thrown if the channel is not owned by the user.
      */
     public function delete()
     {
         if (empty($this->myChannel)) {
-            throw new Exceptions\PushbulletException("Cannot delete not owned channels.");
+            throw new Exceptions\ChannelException("Cannot delete a channel not owned by the current user.");
         }
 
-        Pushbullet::sendCurlRequest(Pushbullet::URL_CHANNELS . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
+        Connection::sendCurlRequest(Connection::URL_CHANNELS . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
     }
 }

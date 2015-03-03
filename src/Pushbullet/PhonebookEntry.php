@@ -2,11 +2,16 @@
 
 namespace Pushbullet;
 
+/**
+ * Phonebook Entry
+ *
+ * @package Pushbullet
+ */
 class PhonebookEntry
 {
     private $deviceParent;
 
-    private $phone;
+    public $phone;
 
     public function __construct($properties, Device $parent)
     {
@@ -23,8 +28,9 @@ class PhonebookEntry
      * @param string $message Message.
      *
      * @return Push
-     * @throws Exceptions\InvalidRecipientException
-     * @throws Exceptions\NoSmsException
+     * @throws Exceptions\ConnectionException
+     * @throws Exceptions\InvalidRecipientException Thrown if the contact doesn't have a number.
+     * @throws Exceptions\NoSmsException Thrown if the device cannot send SMS messages.
      */
     public function sendSms($message)
     {
