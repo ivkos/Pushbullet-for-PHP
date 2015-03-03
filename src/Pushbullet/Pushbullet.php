@@ -108,9 +108,7 @@ class Pushbullet
         }
 
         foreach ($this->devices as $d) {
-            if ((isset($d->iden) && $d->iden == $idenOrNickname) ||
-                (isset($d->nickname) && $d->nickname == $idenOrNickname)
-            ) {
+            if ($d->iden == $idenOrNickname || $d->nickname == $idenOrNickname) {
                 return $d;
             }
         }
@@ -315,7 +313,8 @@ class Pushbullet
     {
         $data = self::initData($modifiedAfter, $cursor, $limit);
 
-        $myChannels = Connection::sendCurlRequest(Connection::URL_CHANNELS, 'GET', $data, false, $this->apiKey)->channels;
+        $myChannels = Connection::sendCurlRequest(Connection::URL_CHANNELS, 'GET', $data, false,
+            $this->apiKey)->channels;
 
         $objChannels = [];
 
