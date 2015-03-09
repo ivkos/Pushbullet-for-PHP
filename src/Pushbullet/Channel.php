@@ -5,6 +5,8 @@ namespace Pushbullet;
 /**
  * Channel
  *
+ * This class abstracts some of the differences between a subscription to a channel, and a channel itself.
+ *
  * @package Pushbullet
  */
 class Channel
@@ -13,11 +15,6 @@ class Channel
 
     private $channelTag;
     private $type;
-
-    public $tag;
-    public $iden;
-
-    public $myChannel = false;
 
     public function __construct($properties, $apiKey)
     {
@@ -31,6 +28,10 @@ class Channel
         } else {
             $this->type = "channel";
             $this->channelTag = $this->tag;
+        }
+
+        if (!empty($this->myChannel)) {
+            $this->pushable = true;
         }
 
         $this->apiKey = $apiKey;
@@ -74,7 +75,7 @@ class Channel
      * Unsubscribe from the channel.
      *
      * @throws Exceptions\ConnectionException
-     * @throws Exceptions\ChannelException Thrown if the user is already subscribed to the channel.
+     * @throws Exceptions\ChannelException Thrown if the user is not subscribed to the channel.
      */
     public function unsubscribe()
     {
@@ -87,13 +88,17 @@ class Channel
     }
 
     /**
-     * Get channel information.
+     * Get information about the channel.
      *
-     * @return Channel
+     * Guaranteed to always return channel information, whether or not the user is subscribed to it. It is
+     * recommended to access the properties returned by this method, since they are consistent and always refer to
+     * a channel, and not a subscription.
+     *
+     * @return Channel Channel object with information about a particular channel.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotFoundException
      */
-    public function getInformation()
+    public function getChannelInformation()
     {
         try {
             return new Channel(
@@ -128,14 +133,15 @@ class Channel
 
         // TODO Ability to add a picture for the channel.
 
-        return new Channel(
-            Connection::sendCurlRequest(Connection::URL_CHANNELS, 'POST', [
-                'name'        => $title,
-                'description' => $description,
-                'tag'         => $this->channelTag
-            ], true, $this->apiKey),
-            $this->apiKey
-        );
+        $newChannel = Connection::sendCurlRequest(Connection::URL_CHANNELS, 'POST', [
+            'name'        => $title,
+            'description' => $description,
+            'tag'         => $this->channelTag
+        ], true, $this->apiKey);
+
+        $newChannel->myChannel = true;
+
+        return new Channel($newChannel, $this->apiKey);
     }
 
     /**

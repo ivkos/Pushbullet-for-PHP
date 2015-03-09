@@ -232,7 +232,10 @@ class Pushbullet
      *
      * @param string $tag Channel tag.
      *
-     * @return Channel Channel.
+     * @return Channel Channel or a subscription to a channel.
+     *                 If you need information about a channel, and not a subscription to one, it is
+     *                 recommended to use the <code>getChannelInformation()</code> method and access the properties
+     *                 of the object it returns.
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\InvalidTokenException
      */

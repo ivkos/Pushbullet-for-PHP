@@ -84,13 +84,14 @@ class Connection
         }
 
         $response = curl_exec($curl);
-        $json = json_decode($response);
 
         if ($response === false) {
             $curlError = curl_error($curl);
             curl_close($curl);
             throw new Exceptions\ConnectionException('cURL Error: ' . $curlError);
         }
+
+        $json = json_decode($response);
 
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 

@@ -12,7 +12,6 @@ trait Pushable
     private $recipientType;
     private $recipient;
 
-    public $pushable;
     protected $apiKey;
 
     /**
@@ -51,7 +50,7 @@ trait Pushable
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
-    public function pushNote($title, $body = null)
+    public function pushNote($title, $body)
     {
         self::checkPushable();
 
@@ -78,7 +77,7 @@ trait Pushable
      * @throws Exceptions\ConnectionException
      * @throws Exceptions\NotPushableException
      */
-    public function pushLink($title, $url, $body = null)
+    public function pushLink($title, $url, $body)
     {
         self::checkPushable();
 
@@ -167,8 +166,6 @@ trait Pushable
     {
         self::checkPushable();
 
-        $data = [];
-
         $fullFilePath = realpath($filePath);
 
         if (!is_readable($fullFilePath)) {
@@ -178,6 +175,8 @@ trait Pushable
         if (filesize($fullFilePath) > 25 * 1024 * 1024) {
             throw new Exceptions\FilePushException('File size exceeds 25 MB.');
         }
+
+        $data = [];
 
         $data['file_name'] = $altFileName === null ? basename($fullFilePath) : $altFileName;
 

@@ -11,9 +11,6 @@ class Device
 {
     use Pushable;
 
-    public $iden;
-    public $has_sms;
-
     public function __construct($properties, $apiKey)
     {
         foreach ($properties as $k => $v) {

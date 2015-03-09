@@ -11,9 +11,6 @@ class Contact
 {
     use Pushable;
 
-    public $email;
-    public $iden;
-
     public function __construct($properties, $apiKey)
     {
         foreach ($properties as $k => $v) {
@@ -25,7 +22,7 @@ class Contact
         if (isset($this->email)) {
             $this->setPushableRecipient("email", $this->email);
         } else {
-            $this->pushable = 0;
+            $this->pushable = false;
         }
     }
 
@@ -37,7 +34,7 @@ class Contact
      * @return Contact The same contact with a different name.
      * @throws Exceptions\ConnectionException
      */
-    public function setName($name)
+    public function changeName($name)
     {
         return new Contact(
             Connection::sendCurlRequest(Connection::URL_CONTACTS . '/' . $this->iden, 'POST', ['name' => $name], true,
