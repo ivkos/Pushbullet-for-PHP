@@ -5,7 +5,7 @@ namespace Pushbullet;
 /**
  * Pushbullet
  *
- * @version 3.0.0
+ * @version 3.1.0
  */
 class Pushbullet
 {
@@ -114,6 +114,20 @@ class Pushbullet
         }
 
         throw new Exceptions\NotFoundException("Device not found.");
+    }
+
+    /**
+     * Target all devices for pushing. This method returns a pseudo-device object that can only be pushed to. It
+     * does not support SMS, has no phonebook, and cannot be deleted.
+     *
+     * @return Device A pseudo-device that targets all available devices for pushing.
+     */
+    public function allDevices() {
+        return new Device([
+            "iden" => "",
+            "pushable" => true,
+            "has_sms" => false
+        ], $this->apiKey);
     }
 
     /**
