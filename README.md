@@ -69,6 +69,12 @@ $pb->device("Galaxy S4")->getPhonebook();
 ```
 Returns an array of `PhonebookEntry` objects with names and phone numbers.
 
+To target all available devices for pushing:
+```php
+$pb->allDevices()->pushAddress("Google HQ", "1600 Amphitheatre Parkway");
+```
+This will send the address to all devices, and return a `Push` object.
+
 ### Push Notifications
 You can use `push*` methods for `Contact`, `Channel` and `Device` objects. Every `push*` method returns a `Push` object. If an object cannot be pushed to, a `NotPushableException` will be thrown.
 
