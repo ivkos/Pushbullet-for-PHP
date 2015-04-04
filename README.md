@@ -16,7 +16,7 @@ For more information, you can refer to these links:
 * **Apps**: https://www.pushbullet.com/apps
 
 ## Requirements
-* PHP 5.4.0 or newer
+* PHP 5.3.0 or newer
 * cURL library for PHP
 * Your Pushbullet API key (get it here: https://www.pushbullet.com/account)
 
