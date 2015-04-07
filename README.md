@@ -1,5 +1,8 @@
 Pushbullet for PHP
 ================
+[![](https://img.shields.io/packagist/v/ivkos/pushbullet.svg?style=flat-square)](https://packagist.org/packages/ivkos/pushbullet)
+[![](https://img.shields.io/packagist/dt/ivkos/pushbullet.svg?style=flat-square)](https://packagist.org/packages/ivkos/pushbullet)
+[![](https://img.shields.io/packagist/l/ivkos/pushbullet.svg?style=flat-square)](LICENSE)
 
 ## Description
 A PHP library for the **[Pushbullet](https://www.pushbullet.com)** API allowing you to send all supported push notification types, manage contacts, send SMS messages, create/delete channels, and manage channel subscriptions.
