@@ -21,6 +21,7 @@ class Contact
 
         if (isset($this->email)) {
             $this->setPushableRecipient("email", $this->email);
+            $this->pushable = true;
         } else {
             $this->pushable = false;
         }

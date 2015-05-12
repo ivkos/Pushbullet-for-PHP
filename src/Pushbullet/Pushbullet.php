@@ -5,7 +5,7 @@ namespace Pushbullet;
 /**
  * Pushbullet
  *
- * @version 3.1.0
+ * @package Pushbullet
  */
 class Pushbullet
 {
