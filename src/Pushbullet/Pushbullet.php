@@ -263,16 +263,16 @@ class Pushbullet
             $this->getMyChannels();
         }
 
-        foreach ($this->channels as $c) {
-            if ($tag == $c->channel->tag) {
-                return $c;
-            }
-        }
-
         foreach ($this->myChannels as $c) {
             if ($tag == $c->tag) {
                 $c->myChannel = true;
 
+                return $c;
+            }
+        }
+
+        foreach ($this->channels as $c) {
+            if ($tag == $c->channel->tag) {
                 return $c;
             }
         }
