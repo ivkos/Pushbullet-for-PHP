@@ -187,21 +187,6 @@ $pb->getMyChannels();
 ```
 Returns an array of `Channel` objects.
 
-----------
-
-Create a channel named `mychannel`. If this channel tag is already registered, a `ChannelException` will be thrown.
-```php
-$pb->channel("mychannel")->create("My Channel", "This channel will only push awesome stuff!");
-```
-Returns a `Channel` object for the newly created channel.
-
-----------
-
-Delete a channel if you are its creator:
-```php
-$pb->channel("mychannel")->delete();
-```
-
 ### Contact Management
 Contacts are people you can send push notification to. They are not to be confused with entries in a device's phonebook.
 
