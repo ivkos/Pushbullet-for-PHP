@@ -97,53 +97,31 @@ trait Pushable
     /**
      * Push an address.
      *
+     * @deprecated Pushing addresses has been deprecated in Pushbullet.
+     *
      * @param string $name    The place's name.
      * @param string $address The place's address or a map search query.
      *
-     * @return Push Push notification.
-     * @throws Exceptions\ConnectionException
-     * @throws Exceptions\NotPushableException
+     * @throws Exceptions\DeprecatedException
      */
     public function pushAddress($name, $address)
     {
-        self::checkPushable();
-
-        $data = [];
-        $data[$this->recipientType] = $this->recipient;
-        $data['type'] = 'address';
-        $data['name'] = $name;
-        $data['address'] = $address;
-
-        return new Push(
-            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
-            $this->apiKey
-        );
+        throw new Exceptions\DeprecatedException("Pushing addresses has been deprecated in Pushbullet.");
     }
 
     /**
      * Push a list.
      *
+     * @deprecated Pushing lists has been deprecated in Pushbullet.
+     *
      * @param string   $title The list's title.
      * @param string[] $items The items in the list.
      *
-     * @return Push Push notification.
-     * @throws Exceptions\ConnectionException
-     * @throws Exceptions\NotPushableException
+     * @throws Exceptions\DeprecatedException
      */
     public function pushList($title, array $items)
     {
-        self::checkPushable();
-
-        $data = [];
-        $data[$this->recipientType] = $this->recipient;
-        $data['type'] = 'list';
-        $data['title'] = $title;
-        $data['items'] = $items;
-
-        return new Push(
-            Connection::sendCurlRequest(Connection::URL_PUSHES, "POST", $data, true, $this->apiKey),
-            $this->apiKey
-        );
+        throw new Exceptions\DeprecatedException("Pushing lists has been deprecated in Pushbullet.");
     }
 
     /**
