@@ -118,44 +118,27 @@ class Channel
     /**
      * Create the channel if it does not exist already.
      *
+     * @deprecated Channels can only be created from Pushbullet's website.
+     *
      * @param string $title       Channel name.
      * @param string $description Channel description.
      *
-     * @return Channel The newly created channel.
-     * @throws Exceptions\ConnectionException
-     * @throws Exceptions\ChannelException Thrown if the channel already exists.
+     * @throws Exceptions\DeprecatedException
      */
     public function create($title, $description)
     {
-        if ($this->type == "subscription" || !empty($this->myChannel)) {
-            throw new Exceptions\ChannelException("Channel already exists.");
-        }
-
-        // TODO Ability to add a picture for the channel.
-
-        $newChannel = Connection::sendCurlRequest(Connection::URL_CHANNELS, 'POST', [
-            'name'        => $title,
-            'description' => $description,
-            'tag'         => $this->channelTag
-        ], true, $this->apiKey);
-
-        $newChannel->myChannel = true;
-
-        return new Channel($newChannel, $this->apiKey);
+        throw new Exceptions\DeprecatedException("Channels can only be created from Pushbullet's website.");
     }
 
     /**
      * Delete the channel if it is owned by the current user.
      *
-     * @throws Exceptions\ConnectionException
-     * @throws Exceptions\ChannelException Thrown if the channel is not owned by the user.
+     * @deprecated Channels can only be deleted from Pushbullet's website.
+     *
+     * @throws Exceptions\DeprecatedException
      */
     public function delete()
     {
-        if (empty($this->myChannel)) {
-            throw new Exceptions\ChannelException("Cannot delete a channel not owned by the current user.");
-        }
-
-        Connection::sendCurlRequest(Connection::URL_CHANNELS . '/' . $this->iden, 'DELETE', null, false, $this->apiKey);
+        throw new Exceptions\DeprecatedException("Channels can only be deleted from Pushbullet's website.");
     }
 }
