@@ -30,6 +30,8 @@ Create a `composer.json` file in your project root:
 }
 ```
 
+Run `php composer.phar install` to download the library and its dependencies.
+
 ## Quick Documentation
 
 Add this line to include Composer packages:
