@@ -61,6 +61,22 @@ class Pushbullet
     }
 
     /**
+     * Returns a Push object with the specified iden.
+     *
+     * @param string $iden Iden of push notification.
+     * @return Push Push notification object.
+     * 
+     * @throws Exceptions\ConnectionException
+     * @throws Exceptions\NotFoundException If there's no push notification with the specified iden
+     */
+    public function push($iden)
+    {
+        $response = Connection::sendCurlRequest(Connection::URL_PUSHES . '/' . $iden, 'GET', null, false, $this->apiKey);
+
+        return new Push($response, $this->apiKey);
+    }
+
+    /**
      * Get a list of available devices.
      *
      * @param int    $modifiedAfter Request devices modified after this UNIX timestamp.
