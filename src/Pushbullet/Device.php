@@ -7,7 +7,7 @@ namespace Pushbullet;
  *
  * @package Pushbullet
  */
-class Device
+class Device extends stdClass
 {
     use Pushable;
 
